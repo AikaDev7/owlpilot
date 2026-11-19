@@ -109,7 +109,9 @@ Rules:
 - The notes override the button answers when they conflict.
 - Never invent rules that are not in the notes. If the notes contain nothing usable, return empty arrays.
 - All times are within 07:00-22:00, 24-hour "HH:MM". Days are Mon, Tue, Wed, Thu, Fri.
-- hardRules: times the student CANNOT have class, as {day, start, end}. If the student says they are only free in some window, block everything else that day. Example: "on Monday I'm only free 9-10 AM" -> Mon 07:00-09:00 and Mon 10:00-22:00. "I work Tuesday evenings" -> Tue 17:00-22:00.
+- hardRules: ONLY times the student truly cannot attend class, as {day, start, end}. Use a hard rule for real obligations or unavailability: work, practice, a commitment, "I'm not available", "I can't", "I'm busy". A whole day off means that day 07:00-22:00.
+- Dislikes are NOT hard rules. Words like "hate", "dislike", "prefer not", "would rather not", "don't like", "avoid" become softRules (avoidDay for a day, avoidTime for a time of day) and add nothing to hardRules.
+- If the student says they are only free in some window, block everything else that day. Example: "on Monday I'm only free 9-10 AM" -> Mon 07:00-09:00 and Mon 10:00-22:00. "I work Tuesday evenings" -> Tue 17:00-22:00.
 - softRules: preferences, as {type, value, note}. type is one of: avoidLongGaps, maxClassesPerDay, preferDay, avoidDay, preferTime, avoidTime, interest, other. value is a short string (a number for maxClassesPerDay, a day for preferDay/avoidDay, Morning/Afternoon/Evening for preferTime/avoidTime, the subject for interest, otherwise a few words). note is a short explanation.
 - Use "interest" for each subject the student likes, one rule per subject ("I'm interested in psychology and art" -> two interest rules).
 - summary: 2-5 short, friendly bullets of what you understood, e.g. "Monday: only 9-10 AM", "Interested in psychology".`;
@@ -143,6 +145,79 @@ function cleanRules(raw) {
   return { hardRules, softRules, summary };
 }
 
+// ---------- Reliable Gemini calls: retries, fallback model, cache ----------
+const MAX_TOTAL_MS = 25000; // the whole request stays under about 25 seconds
+const ATTEMPT_TIMEOUT_MS = 12000; // one Gemini call
+const RETRY_DELAYS_MS = [1000, 2000]; // wait before retry 1 and retry 2
+const FALLBACK_MODEL = process.env.GEMINI_FALLBACK_MODEL || "gemini-3.1-flash-lite";
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// One Gemini call. Returns the parsed rules, or throws an Error with `retryable` set.
+async function callGeminiOnce(model, prompt, timeoutMs) {
+  let response;
+  try {
+    response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { responseMimeType: "application/json", responseSchema: PREFERENCES_SCHEMA, temperature: 0.2 },
+      }),
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+  } catch (err) {
+    // timeout or network problem: worth retrying
+    const e = new Error(err.name === "TimeoutError" ? "timeout" : "network error");
+    e.retryable = true;
+    throw e;
+  }
+
+  if (!response.ok) {
+    let message = "";
+    try {
+      message = (await response.json()).error?.message || "";
+    } catch {}
+    const e = new Error(`HTTP ${response.status} ${message.slice(0, 80)}`.trim());
+    e.retryable = response.status === 503 || response.status === 429;
+    throw e;
+  }
+
+  try {
+    const data = await response.json();
+    return cleanRules(JSON.parse(data.candidates?.[0]?.content?.parts?.[0]?.text));
+  } catch {
+    const e = new Error("bad JSON from Gemini");
+    e.retryable = true;
+    throw e;
+  }
+}
+
+// Main model (up to 3 tries), then the fallback model (up to 3 tries), all inside MAX_TOTAL_MS.
+async function parseWithGemini(prompt) {
+  const deadline = Date.now() + MAX_TOTAL_MS;
+  const models = MODEL === FALLBACK_MODEL ? [MODEL] : [MODEL, FALLBACK_MODEL];
+
+  for (const model of models) {
+    for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt++) {
+      const timeLeft = deadline - Date.now();
+      if (timeLeft < 1500) throw new Error("ran out of time");
+      try {
+        return await callGeminiOnce(model, prompt, Math.min(ATTEMPT_TIMEOUT_MS, timeLeft));
+      } catch (err) {
+        console.error(`parse-preferences: ${model} try ${attempt + 1} failed: ${err.message}`);
+        if (!err.retryable) break; // e.g. 400/404: retrying the same model won't help, go to the fallback
+        if (attempt < RETRY_DELAYS_MS.length) await sleep(Math.min(RETRY_DELAYS_MS[attempt], Math.max(0, deadline - Date.now() - 1500)));
+      }
+    }
+  }
+  throw new Error("all models failed");
+}
+
+// Successful results are kept in memory by the exact input, so repeating a request (e.g. in a demo) is instant.
+const preferenceCache = new Map();
+const CACHE_LIMIT = 200;
+
 // Body: { notes, days, times, busyTimes, numCourses, numOnline }
 // Reply: { hardRules, softRules, summary }  (plus error: "AI unavailable" if Gemini failed)
 app.post("/api/parse-preferences", async (req, res) => {
@@ -152,43 +227,25 @@ app.post("/api/parse-preferences", async (req, res) => {
     return res.json(EMPTY_RULES);
   }
 
-  const unavailable = () => res.json({ ...EMPTY_RULES, error: "AI unavailable" });
+  const input = { ...body, notes };
+  const cacheKey = JSON.stringify([input.notes, input.days, input.times, input.busyTimes, input.numCourses, input.numOnline]);
+  if (preferenceCache.has(cacheKey)) {
+    return res.json(preferenceCache.get(cacheKey));
+  }
+
   if (!process.env.GEMINI_API_KEY) {
     console.error("parse-preferences: GEMINI_API_KEY is not set");
-    return unavailable();
+    return res.json({ ...EMPTY_RULES, error: "AI unavailable" });
   }
 
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": process.env.GEMINI_API_KEY,
-      },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: buildPreferencePrompt({ ...body, notes }) }] }],
-        generationConfig: {
-          responseMimeType: "application/json",
-          responseSchema: PREFERENCES_SCHEMA,
-          temperature: 0.2,
-        },
-      }),
-      signal: AbortSignal.timeout(15000),
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
-      console.error("parse-preferences: Gemini returned", response.status, data.error?.message);
-      return unavailable();
-    }
-
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    res.json(cleanRules(JSON.parse(text)));
+    const rules = await parseWithGemini(buildPreferencePrompt(input));
+    if (preferenceCache.size >= CACHE_LIMIT) preferenceCache.delete(preferenceCache.keys().next().value); // drop the oldest
+    preferenceCache.set(cacheKey, rules);
+    res.json(rules);
   } catch (err) {
-    // Timeout, network error or bad JSON: log only the message (never the key) and let the app carry on
-    console.error("parse-preferences failed:", err.name, err.message);
-    unavailable();
+    console.error("parse-preferences gave up:", err.message); // short message only, never the key; errors are not cached
+    res.json({ ...EMPTY_RULES, error: "AI unavailable" });
   }
 });
 

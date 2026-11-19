@@ -26,7 +26,7 @@ export async function parsePreferences(input: {
   numOnline: number;
 }): Promise<AiRules> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 20000); // the server itself gives up after 15 seconds
+  const timer = setTimeout(() => controller.abort(), 30000); // longer than the server's ~25 second limit, so the app never gives up first
   try {
     const response = await fetch(`${API_URL}/api/parse-preferences`, {
       method: "POST",
