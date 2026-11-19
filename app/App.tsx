@@ -1,0 +1,42 @@
+import { useEffect } from "react";
+import { StatusBar } from "expo-status-bar";
+import * as SplashScreen from "expo-splash-screen";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { useFonts, Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, Manrope_700Bold } from "@expo-google-fonts/manrope";
+import { Outfit_400Regular, Outfit_500Medium } from "@expo-google-fonts/outfit";
+import { RootStackParamList } from "./src/navigation";
+import SplashScreenView from "./src/screens/SplashScreen";
+import HomeScreen from "./src/screens/HomeScreen";
+
+// Keep the native splash visible until the fonts are ready
+SplashScreen.preventAutoHideAsync();
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
+
+export default function App() {
+  const [fontsLoaded] = useFonts({
+    Manrope_400Regular,
+    Manrope_500Medium,
+    Manrope_600SemiBold,
+    Manrope_700Bold,
+    Outfit_400Regular,
+    Outfit_500Medium,
+  });
+
+  useEffect(() => {
+    if (fontsLoaded) SplashScreen.hideAsync();
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) return null;
+
+  return (
+    <NavigationContainer>
+      <StatusBar style="auto" />
+      <Stack.Navigator initialRouteName="Splash" screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Splash" component={SplashScreenView} />
+        <Stack.Screen name="Home" component={HomeScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
