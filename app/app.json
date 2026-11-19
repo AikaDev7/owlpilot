@@ -30,7 +30,8 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 1
         }
-      ]
+      ],
+      "expo-image"
     ],
     "backgroundColor": "#000000"
   }

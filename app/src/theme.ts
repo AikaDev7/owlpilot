@@ -5,6 +5,7 @@ export const colors = {
   black: "#000000",
   white: "#FFFFFF",
   lightGray: "#F5F5F5",
+  lightYellow: "#FFEDBC", // Building screen background
 
   // Extra grays and accents used by components
   textDark: "#1A1A1A", // titles on light screens

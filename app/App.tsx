@@ -13,6 +13,7 @@ import SelectCoursesScreen from "./src/screens/SelectCoursesScreen";
 import { ProfileProvider } from "./src/context/ProfileContext";
 import PreferencesScreen from "./src/screens/PreferencesScreen";
 import BuildingScreen from "./src/screens/BuildingScreen";
+import ResultsScreen from "./src/screens/ResultsScreen";
 import HomeScreen from "./src/screens/HomeScreen";
 
 // Keep the native splash visible until the fonts are ready
@@ -47,6 +48,7 @@ export default function App() {
         <Stack.Screen name="SelectCourses" component={SelectCoursesScreen} />
         <Stack.Screen name="Preferences" component={PreferencesScreen} />
         <Stack.Screen name="Building" component={BuildingScreen} />
+        <Stack.Screen name="Results" component={ResultsScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
       </Stack.Navigator>
     </NavigationContainer>

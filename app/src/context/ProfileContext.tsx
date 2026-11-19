@@ -12,6 +12,12 @@ export type Preferences = {
   busyTimes: BusyTime[];
 };
 
+// What the AI understood from the free-text notes (see POST /api/parse-preferences).
+// Times are "HH:MM" (24-hour). `error` is set when the AI was unavailable.
+export type HardRule = { day: string; start: string; end: string };
+export type SoftRule = { type: string; value: string; note: string };
+export type AiRules = { hardRules: HardRule[]; softRules: SoftRule[]; summary: string[]; error?: string };
+
 // What the user told us in the onboarding steps. Later screens read it with useProfile().
 export type Profile = {
   major: string | null;
@@ -23,9 +29,10 @@ export type Profile = {
   campus: string | null; // "Kennesaw" or "Marietta"
   selectedCourses: string[]; // course codes picked for next term
   preferences: Preferences | null; // set on the Preferences screen
+  aiRules: AiRules | null; // set on the Building screen
 };
 
-const emptyProfile: Profile = { major: null, year: null, startYear: null, gradYear: null, takenCourses: [], semester: null, campus: null, selectedCourses: [], preferences: null };
+const emptyProfile: Profile = { major: null, year: null, startYear: null, gradYear: null, takenCourses: [], semester: null, campus: null, selectedCourses: [], preferences: null, aiRules: null };
 
 type ProfileContextValue = {
   profile: Profile;

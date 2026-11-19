@@ -7,5 +7,6 @@ export type RootStackParamList = {
   SelectCourses: undefined;
   Preferences: undefined;
   Building: undefined;
+  Results: undefined;
   Home: undefined;
 };
