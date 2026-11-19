@@ -9,6 +9,8 @@ import { RootStackParamList } from "./src/navigation";
 import SplashScreenView from "./src/screens/SplashScreen";
 import WelcomeScreen from "./src/screens/WelcomeScreen";
 import AboutYouScreen from "./src/screens/AboutYouScreen";
+import SelectCoursesScreen from "./src/screens/SelectCoursesScreen";
+import { ProfileProvider } from "./src/context/ProfileContext";
 import HomeScreen from "./src/screens/HomeScreen";
 
 // Keep the native splash visible until the fonts are ready
@@ -33,14 +35,17 @@ export default function App() {
   if (!fontsLoaded) return null;
 
   return (
+    <ProfileProvider>
     <NavigationContainer>
       <StatusBar style="auto" />
       <Stack.Navigator initialRouteName="Splash" screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Splash" component={SplashScreenView} />
         <Stack.Screen name="Welcome" component={WelcomeScreen} />
         <Stack.Screen name="AboutYou" component={AboutYouScreen} />
+        <Stack.Screen name="SelectCourses" component={SelectCoursesScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
       </Stack.Navigator>
     </NavigationContainer>
+    </ProfileProvider>
   );
 }

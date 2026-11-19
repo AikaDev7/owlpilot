@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { colors, fonts, shadow } from "../theme";
 
 type Props = {
@@ -6,6 +7,7 @@ type Props = {
   onPress: () => void;
   // yellow/black for light screens, white for dark screens (like Welcome)
   variant?: "yellow" | "black" | "white";
+  arrow?: boolean; // show a ">" after the title
 };
 
 const looks = {
@@ -14,7 +16,7 @@ const looks = {
   white: { backgroundColor: colors.white, color: colors.black },
 };
 
-export default function PrimaryButton({ title, onPress, variant = "yellow" }: Props) {
+export default function PrimaryButton({ title, onPress, variant = "yellow", arrow = false }: Props) {
   return (
     <Pressable
       onPress={onPress}
@@ -24,6 +26,7 @@ export default function PrimaryButton({ title, onPress, variant = "yellow" }: Pr
       ]}
     >
       <Text style={[styles.text, { color: looks[variant].color }]}>{title}</Text>
+      {arrow && <Ionicons name="chevron-forward" size={28} color={looks[variant].color} />}
     </Pressable>
   );
 }
@@ -35,6 +38,8 @@ const styles = StyleSheet.create({
     borderRadius: 17,
     alignItems: "center",
     justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
     ...shadow,
   },
   text: { fontFamily: fonts.titleRegular, fontSize: 29, lineHeight: 46 },

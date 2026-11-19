@@ -4,5 +4,6 @@ export type RootStackParamList = {
   Splash: undefined;
   Welcome: undefined;
   AboutYou: { major: string };
+  SelectCourses: undefined;
   Home: undefined;
 };

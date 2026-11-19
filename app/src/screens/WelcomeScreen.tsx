@@ -57,6 +57,7 @@ export default function WelcomeScreen({ navigation }: Props) {
               onSelect={handleSelect}
               error={showError ? "Please choose your major from the list to continue." : undefined}
               placeholder="Search"
+              emptyText="No majors found"
               onOpen={scrollDown}
             />
           </View>

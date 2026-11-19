@@ -1,18 +1,19 @@
-import { Pressable, StyleSheet, Text } from "react-native";
+import { Pressable, StyleProp, StyleSheet, Text, ViewStyle } from "react-native";
 import { colors, fonts, shadow } from "../theme";
 
 type Props = {
   label: string;
   selected?: boolean;
   onPress?: () => void;
+  style?: StyleProp<ViewStyle>; // e.g. { flex: 1 } to share a row evenly
 };
 
 // Yellow when selected, gray when not
-export default function Chip({ label, selected = false, onPress }: Props) {
+export default function Chip({ label, selected = false, onPress, style }: Props) {
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.chip, selected ? styles.selected : styles.unselected]}
+      style={[styles.chip, selected ? styles.selected : styles.unselected, style]}
     >
       <Text style={styles.text}>{label}</Text>
     </Pressable>

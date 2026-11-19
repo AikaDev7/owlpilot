@@ -19,6 +19,11 @@ export const colors = {
   placeholderDark: "#7B7B7B", // placeholder on the Welcome screen
   progressGray: "#C3C3C3", // unfinished progress bar segments
   error: "#E21C1C", // red for validation errors
+  dropdownBg: "#F0F0F0", // dropdown box background
+  dropdownBorder: "#D7D7D7",
+  courseChip: "#E6E6E6", // removable course chip background
+  courseChipText: "#2D2D2D",
+  overlay: "rgba(0,0,0,0.4)", // dim background behind modals
 };
 
 export const fonts = {

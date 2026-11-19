@@ -11,10 +11,14 @@ type Props = {
   onDark?: boolean; // true on a black screen
   error?: string; // message to show in red under the box (also turns the border red)
   onOpen?: () => void; // called when the list opens (e.g. to scroll the screen)
+  emptyText?: string; // shown when nothing matches
+  // Multi-pick mode (e.g. courses): picking calls onSelect and clears the box,
+  // and typing never picks anything by itself.
+  clearOnPick?: boolean;
 };
 
 // Search box + list. Tap the box to see all options, type to filter, tap one to pick it.
-export default function SearchSelect({ options, value, onSelect, placeholder, onDark, error, onOpen }: Props) {
+export default function SearchSelect({ options, value, onSelect, placeholder, onDark, error, onOpen, emptyText = "No results found", clearOnPick }: Props) {
   const [text, setText] = useState(value ?? "");
   const [open, setOpen] = useState(false);
 
@@ -25,13 +29,14 @@ export default function SearchSelect({ options, value, onSelect, placeholder, on
   function handleChange(newText: string) {
     setText(newText);
     setOpen(true);
+    if (clearOnPick) return;
     // Typing clears the old pick, unless the text exactly matches an option
     const exact = options.find((item) => item.toLowerCase() === newText.trim().toLowerCase());
     onSelect(exact ?? null);
   }
 
   function handlePick(item: string) {
-    setText(item);
+    setText(clearOnPick ? "" : item);
     onSelect(item);
     setOpen(false);
     Keyboard.dismiss();
@@ -70,7 +75,7 @@ export default function SearchSelect({ options, value, onSelect, placeholder, on
         <View style={styles.list}>
           <ScrollView nestedScrollEnabled keyboardShouldPersistTaps="handled">
             {results.length === 0 ? (
-              <Text style={styles.empty}>No majors found</Text>
+              <Text style={styles.empty}>{emptyText}</Text>
             ) : (
               results.map((item) => (
                 <Pressable key={item} style={styles.row} onPress={() => handlePick(item)}>

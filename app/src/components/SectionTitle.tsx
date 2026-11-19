@@ -6,11 +6,12 @@ type Props = {
   // true when the screen background is black (Welcome screen)
   onDark?: boolean;
   style?: TextStyle;
+  numberOfLines?: number;
 };
 
-export default function SectionTitle({ children, onDark, style }: Props) {
+export default function SectionTitle({ children, onDark, style, numberOfLines }: Props) {
   return (
-    <Text style={[styles.title, { color: onDark ? colors.white : colors.textDark }, style]}>
+    <Text numberOfLines={numberOfLines} style={[styles.title, { color: onDark ? colors.white : colors.textDark }, style]}>
       {children}
     </Text>
   );
