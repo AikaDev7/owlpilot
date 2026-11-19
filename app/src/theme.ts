@@ -35,6 +35,13 @@ export const colors = {
   cardSubtext: "#494949", // time card small range
   cardSubtextSelected: "#383838",
   warningBg: "#FDE3E3", // "Full, waitlist" badge background
+  cardBorder: "#D0D0D0", // course card border
+  cardDivider: "#D2D2D2", // line under the course title
+  badgeBg: "#FFE293", // "Best Match" style badges
+  badgeBorder: "#FFD256",
+  badgeText: "#785800",
+  altBg: "#FFF6DF", // yellow "Worth considering" cards
+  altBorder: "#FFDD80",
   overlay: "rgba(0,0,0,0.4)", // dim background behind modals
 };
 

@@ -1,3 +1,4 @@
+import type { Schedule } from "../logic/scheduler";
 import { createContext, ReactNode, useContext, useState } from "react";
 
 export type BusyTime = { days: string[]; start: number; end: number }; // start/end = minutes after midnight
@@ -30,9 +31,10 @@ export type Profile = {
   selectedCourses: string[]; // course codes picked for next term
   preferences: Preferences | null; // set on the Preferences screen
   aiRules: AiRules | null; // set on the Building screen
+  acceptedSchedule: Schedule | null; // set when the student taps "Accept Schedule" on Results
 };
 
-const emptyProfile: Profile = { major: null, year: null, startYear: null, gradYear: null, takenCourses: [], semester: null, campus: null, selectedCourses: [], preferences: null, aiRules: null };
+const emptyProfile: Profile = { major: null, year: null, startYear: null, gradYear: null, takenCourses: [], semester: null, campus: null, selectedCourses: [], preferences: null, aiRules: null, acceptedSchedule: null };
 
 type ProfileContextValue = {
   profile: Profile;

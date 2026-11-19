@@ -36,24 +36,43 @@ export type ScheduleItem = {
   waitCount: number; // students already on the waitlist
   suggested: boolean; // added by us to fill an open slot, not picked by the student
   suggestedReason?: string;
+  level: number; // 1000-4000, 0 if unknown
+  tags: ItemTag[];
+  alternative: Alternative | null; // one better section of this course that we skipped, with the reason
 };
 
+// "noRatings": the professor has no ratings. "outsidePreferredTime": a class is outside the chosen time chips.
+export type ItemTag = "noRatings" | "outsidePreferredTime";
+
+export type Alternative = {
+  item: ScheduleItem; // same course, a different section (and its lab); alternative is always null here
+  reason: string; // "full, waitlist 3/20", "outside your preferred time" or "online"
+};
+
+// Which tab a schedule belongs to: balanced overall, best professors, or fewest days on campus
+export type Strategy = "best" | "professors" | "fewestDays";
+
 export type Schedule = {
+  strategy: Strategy | null; // null for "Find another" schedules
+  highlight: string; // one line made from the data, e.g. "only 2 days on campus"
+  badges: string[]; // e.g. "⭐ Also the highest-rated option" when a hidden tab had the same schedule
+  onlineNote: string | null; // who uses the online slots, e.g. "Your 1 online slot is used by CSE 2300 (Zhang, 4.7★)"
   items: ScheduleItem[];
   score: number;
-  avgRating: number; // missing rating counts as 3.0
+  avgRating: number; // missing rating counts as 2.5
   daysOnCampus: number;
 };
 
 export type SchedulerResult = {
-  schedules: Schedule[]; // best first, up to 3
-  worthConsidering: Schedule | null;
+  schedules: Schedule[]; // one per strategy, in the order best, professors, fewestDays (up to 3)
   notes: string[]; // e.g. a course that could not fit
 };
 
 // ---------- Settings ----------
 
-const NEUTRAL_RATING = 3.0;
+const NEUTRAL_RATING = 3.0; // the "average" rating the score is measured against
+const NO_RATING_SCORE = 2.5; // a professor without ratings counts as below average
+const MIN_ALTERNATIVE_GAIN = 0.8; // an alternative section needs a professor rated this much higher
 const TRAVEL_MINUTES = 10; // between two in-person classes
 const LONG_GAP_MINUTES = 120;
 const MAX_OPTIONS_PER_COURSE = 5; // best first
@@ -61,7 +80,23 @@ const WIDER_OPTIONS_PER_COURSE = 12; // used when the first try finds nothing
 const MAX_WAITLIST_OPTIONS = 2;
 const MAX_SUGGESTED_CANDIDATES = 6;
 const MAX_LEAVES = 30000; // stop searching after this many complete schedules
-const WORTH_CONSIDERING_GAP = 0.5;
+const ONLINE_PRIORITY_GAIN = 0.5; // a selected course keeps first claim on an online slot if it gains at least this much
+const MIN_DIFFERENT = 2; // schedules shown together differ in at least this many courses or professors
+
+// Course levels that fit each year when we fill open slots
+const FIT_LEVELS: Record<string, number[]> = { Freshman: [1000], Sophomore: [2000], Junior: [3000, 4000], Senior: [4000] };
+const WRONG_LEVEL_PENALTY = 4;
+// Interest electives may also be one level below (a junior can take a 2000-level elective)
+const INTEREST_LEVELS: Record<string, number[]> = { ...FIT_LEVELS, Junior: [2000, 3000, 4000] };
+
+const ORDINALS = ["", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"];
+function ordinal(n: number) {
+  return ORDINALS[n] ?? `${n}th`;
+}
+
+function normCode(code: string) {
+  return code.trim().toUpperCase().replace(/\s+/g, " ");
+}
 
 // ---------- Small helpers ----------
 
@@ -143,6 +178,7 @@ type Context = {
   softRules: AiRules["softRules"];
   interests: string[];
   campus: string | null;
+  year: string | null;
 };
 
 // Higher is better. `relaxed` ignores the preferred days and times chips (used for "Worth considering").
@@ -153,10 +189,14 @@ function scoreItems(items: ScheduleItem[], ctx: Context, relaxed: boolean): numb
 
   for (const item of items) {
     score += 8; // more courses is better
-    score += ((item.rating ?? NEUTRAL_RATING) - NEUTRAL_RATING) * 4;
+    score += ((item.rating ?? NO_RATING_SCORE) - NEUTRAL_RATING) * 4;
     score += (NEUTRAL_RATING - (item.difficulty ?? NEUTRAL_RATING)) * 1.5;
     if (item.waitlist) score -= 15;
-    if (item.suggested) score += item.suggestedReason?.startsWith("Required") ? 6 : 2;
+    if (item.suggested) {
+      const isInterestElective = item.suggestedReason?.startsWith("Elective");
+      score += isInterestElective ? 10 : 6; // interest electives rank above core courses
+      if (!isInterestElective && item.level > 0 && !(FIT_LEVELS[ctx.year ?? ""] ?? []).includes(item.level)) score -= WRONG_LEVEL_PENALTY;
+    }
     if (matchesInterest({ code: item.code, title: item.title, level: 0, prerequisites: [] }, ctx.interests)) score += 3;
 
     for (const b of item.blocks) {
@@ -204,8 +244,8 @@ function scoreItems(items: ScheduleItem[], ctx: Context, relaxed: boolean): numb
 }
 
 function averageRating(items: ScheduleItem[]) {
-  if (items.length === 0) return NEUTRAL_RATING;
-  return items.reduce((sum, i) => sum + (i.rating ?? NEUTRAL_RATING), 0) / items.length;
+  if (items.length === 0) return NO_RATING_SCORE;
+  return items.reduce((sum, i) => sum + (i.rating ?? NO_RATING_SCORE), 0) / items.length;
 }
 
 function daysOnCampusOf(items: ScheduleItem[]) {
@@ -229,10 +269,15 @@ function waitlistPossible(s: Section) {
   return s.waitCount < s.waitCapacity;
 }
 
-function makeItem(course: Pick<Course, "code" | "title">, lecture: Section, lab: Section | null, suggestedReason?: string): ScheduleItem {
+function makeItem(course: Pick<Course, "code" | "title"> & { level?: number }, lecture: Section, lab: Section | null, ctx: Context, suggestedReason?: string): ScheduleItem {
   const prof = findProfessor(lecture.professor);
   const parts = lab ? [lecture, lab] : [lecture];
   const full = parts.filter((p) => !seatsOpen(p));
+  const blocks = [...sectionBlocks(lecture), ...(lab ? sectionBlocks(lab) : [])];
+  const anyTime = ctx.prefs.times.length === 0 || ctx.prefs.times.includes("Anytime");
+  const tags: ItemTag[] = [];
+  if (!prof || prof.rating === null) tags.push("noRatings");
+  if (!anyTime && blocks.some((b) => !ctx.prefs.times.includes(timeOfDay(b.start)))) tags.push("outsidePreferredTime");
   return {
     code: course.code,
     title: course.title,
@@ -241,12 +286,15 @@ function makeItem(course: Pick<Course, "code" | "title">, lecture: Section, lab:
     difficulty: prof?.difficulty ?? null,
     lecture,
     lab,
-    blocks: [...sectionBlocks(lecture), ...(lab ? sectionBlocks(lab) : [])],
+    blocks,
     online: isOnline(lecture),
     waitlist: full.length > 0,
     waitCount: full.length > 0 ? Math.max(...full.map((p) => p.waitCount)) : 0,
     suggested: suggestedReason !== undefined,
     suggestedReason,
+    level: course.level ?? findCourse(course.code)?.level ?? 0,
+    tags,
+    alternative: null,
   };
 }
 
@@ -259,7 +307,9 @@ function itemKey(item: ScheduleItem) {
 
 type Options = { open: ScheduleItem[]; waitlist: ScheduleItem[] };
 
-function buildOptions(course: Pick<Course, "code" | "title">, ctx: Context, cap: number, suggestedReason?: string): Options {
+// Every usable lecture+lab combination of a course (deduped, open seats first).
+// Sections that hit a busy time or are on another campus are never included.
+function allItems(course: Pick<Course, "code" | "title">, ctx: Context, suggestedReason?: string, allowOnline = false): ScheduleItem[] {
   const busy = ctx.busy;
   const usable = (s: Section) => campusAllowed(s, ctx.campus) && !hitsBusy(sectionBlocks(s), busy);
 
@@ -272,20 +322,30 @@ function buildOptions(course: Pick<Course, "code" | "title">, ctx: Context, cap:
   for (const lecture of lectures) {
     for (const lab of labs) {
       if (lab && blocksConflict(sectionBlocks(lecture), sectionBlocks(lab))) continue;
-      const item = makeItem(course, lecture, lab, suggestedReason);
-      if (item.online && ctx.prefs.numOnline <= 0) continue;
+      const item = makeItem(course, lecture, lab, ctx, suggestedReason);
+      if (item.online && ctx.prefs.numOnline <= 0 && !allowOnline) continue;
       all.push(item);
     }
   }
   all.sort((a, b) => Number(a.waitlist) - Number(b.waitlist));
   const seen = new Set<string>();
-  const unique = all.filter((item) => {
+  return all.filter((item) => {
     const key = itemKey(item);
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
+}
 
+// Every class of the item is on a preferred day and in a preferred time (online classes with no meetings always fit)
+function fitsPreferences(item: ScheduleItem, ctx: Context) {
+  const anyTime = ctx.prefs.times.length === 0 || ctx.prefs.times.includes("Anytime");
+  return item.blocks.every((b) => (ctx.prefs.days.length === 0 || ctx.prefs.days.includes(b.day)) && (anyTime || ctx.prefs.times.includes(timeOfDay(b.start))));
+}
+
+function buildOptions(course: Pick<Course, "code" | "title">, ctx: Context, cap: number, suggestedReason?: string): Options {
+  // A suggested (filler) course must fit the preferred days and times, so it never adds a day like Friday
+  const unique = allItems(course, ctx, suggestedReason).filter((i) => !suggestedReason || fitsPreferences(i, ctx));
   const solo = (item: ScheduleItem, relaxed: boolean) => scoreItems([item], ctx, relaxed);
   const open = unique.filter((i) => !i.waitlist);
   const waitlist = unique
@@ -304,7 +364,7 @@ function buildOptions(course: Pick<Course, "code" | "title">, ctx: Context, cap:
 // ---------- Search ----------
 
 type Entry = { code: string; suggested: boolean; open: ScheduleItem[]; waitlist: ScheduleItem[] };
-type Found = { items: ScheduleItem[]; score: number; relaxedScore: number; avgRating: number };
+type Found = { items: ScheduleItem[]; score: number; avgRating: number };
 
 function search(entries: Entry[], requiredTarget: number, maxSuggested: number, ctx: Context): Found[] {
   const requiredCount = entries.filter((e) => !e.suggested).length;
@@ -323,16 +383,31 @@ function search(entries: Entry[], requiredTarget: number, maxSuggested: number, 
     return !chosen.some((c) => blocksConflict(c.blocks, item.blocks));
   }
 
+  // Selected courses get first claim on online slots: a suggested (filler) course may be online only if no
+  // selected in-person course could take an online section with a professor rated 0.5+ higher instead.
+  function fillerTakesBetterOnlineSlot(items: ScheduleItem[]) {
+    if (!items.some((i) => i.suggested && i.online)) return false;
+    for (const e of entries) {
+      if (e.suggested) continue;
+      const current = items.find((i) => i.code === e.code);
+      if (!current || current.online) continue;
+      const needed = (current.rating ?? NO_RATING_SCORE) + ONLINE_PRIORITY_GAIN;
+      const others = items.filter((i) => i !== current && !(i.suggested && i.online)); // the filler would give the slot up
+      if (e.open.some((o) => o.online && o.rating !== null && o.rating >= needed && !others.some((x) => blocksConflict(x.blocks, o.blocks)))) return true;
+    }
+    return false;
+  }
+
   function dfs(i: number) {
     if (found.length >= MAX_LEAVES) return;
     if (requiredPicked + remainingRequired[i] < requiredTarget) return;
     if (i === entries.length) {
       if (requiredPicked === requiredTarget) {
         const items = [...chosen];
+        if (fillerTakesBetterOnlineSlot(items)) return;
         found.push({
           items,
           score: scoreItems(items, ctx, false),
-          relaxedScore: scoreItems(items, ctx, true),
           avgRating: averageRating(items),
         });
       }
@@ -368,33 +443,105 @@ function search(entries: Entry[], requiredTarget: number, maxSuggested: number, 
   return found;
 }
 
-// Best schedules first, but try to make each one differ from the others in at least 2 courses
-function pickTop(sorted: Found[], count: number): Found[] {
-  const sameSection = (a: ScheduleItem, b: ScheduleItem) => a.lecture.crn === b.lecture.crn && a.lab?.crn === b.lab?.crn;
-  const differences = (a: Found, b: Found) => a.items.filter((i) => !b.items.some((j) => sameSection(i, j))).length;
-  const top: Found[] = [];
-  for (const minDifferent of [2, 1]) {
-    for (const f of sorted) {
-      if (top.length < count && !top.includes(f) && top.every((t) => differences(f, t) >= minDifferent)) top.push(f);
-    }
-  }
-  return top.sort((a, b) => b.score - a.score);
+// How many items of `a` have no item of `b` with the same course AND professor (the larger of both directions)
+function differences(a: ScheduleItem[], b: ScheduleItem[]) {
+  const count = (x: ScheduleItem[], y: ScheduleItem[]) => x.filter((i) => !y.some((j) => j.code === i.code && j.professor === i.professor)).length;
+  return Math.max(count(a, b), count(b, a));
 }
 
 function signature(items: ScheduleItem[]) {
   return items.map((i) => `${i.lecture.crn}/${i.lab?.crn ?? ""}`).sort().join(",");
 }
 
-function toSchedule(f: Found): Schedule {
-  const items = [...f.items].sort((a, b) => a.code.localeCompare(b.code));
-  return { items, score: Math.round(f.score * 10) / 10, avgRating: Math.round(f.avgRating * 100) / 100, daysOnCampus: daysOnCampusOf(items) };
+// For each course: one better section we skipped (professor rated >= 0.8 higher) that is full, outside the
+// preferred times or online when the student wants 0 online. It never breaks busy times, AI hard rules,
+// or time conflicts with the rest of the schedule.
+function findAlternative(item: ScheduleItem, others: ScheduleItem[], ctx: Context): Alternative | null {
+  const course = { code: item.code, title: item.title };
+  const currentRating = item.rating ?? NO_RATING_SCORE;
+  let best: Alternative | null = null;
+  for (const cand of allItems(course, ctx, item.suggestedReason, true)) {
+    if (cand.lecture.crn === item.lecture.crn && cand.lab?.crn === item.lab?.crn) continue;
+    if (cand.rating === null || cand.rating < currentRating + MIN_ALTERNATIVE_GAIN) continue;
+    if (others.some((o) => blocksConflict(o.blocks, cand.blocks))) continue;
+
+    let reason: string | null = null;
+    if (cand.waitlist) {
+      const full = [cand.lecture, cand.lab].filter((p): p is Section => !!p && !seatsOpen(p));
+      if (!full.every(waitlistPossible)) continue; // the waitlist itself is full
+      const worst = full.reduce((a, b) => (b.waitCount > a.waitCount ? b : a));
+      reason = `full, waitlist ${worst.waitCount}/${worst.waitCapacity}`;
+    } else if (cand.online && ctx.prefs.numOnline <= 0) {
+      reason = "online";
+    } else if (cand.tags.includes("outsidePreferredTime")) {
+      reason = "outside your preferred time";
+    }
+    if (!reason) continue; // nothing kept it out, so it is not an "alternative" to mention
+    if (!best || (cand.rating ?? 0) > (best.item.rating ?? 0)) best = { item: cand, reason };
+  }
+  return best;
+}
+
+const STRATEGIES: Strategy[] = ["best", "professors", "fewestDays"];
+
+// One line under the tab, made from the data (no AI)
+function highlightFor(items: ScheduleItem[], avgRating: number, daysOnCampus: number, strategy: Strategy | null, ctx: Context): string {
+  const avg = `${avgRating.toFixed(1)}★`;
+  if (strategy === "professors") {
+    const great = items.filter((i) => (i.rating ?? 0) > 4).length;
+    return great > 0 ? `${great} class${great > 1 ? "es" : ""} rated above 4★, avg ${avg}` : `best-rated professors available, avg ${avg}`;
+  }
+  if (strategy === "fewestDays") {
+    if (daysOnCampus === 0) return "no days on campus";
+    return `only ${daysOnCampus} day${daysOnCampus > 1 ? "s" : ""} on campus`;
+  }
+  const outside = items.filter(
+    (i) => i.tags.includes("outsidePreferredTime") || (ctx.prefs.days.length > 0 && i.blocks.some((b) => !ctx.prefs.days.includes(b.day))),
+  ).length;
+  const fit = outside === 0 ? "all classes fit your preferred days and times" : `${outside} class${outside > 1 ? "es" : ""} outside your preferred days or times`;
+  return `${fit}, avg ${avg}`;
+}
+
+// "Your 1 online slot is used by CSE 2300 (Zhang, 4.7★)" (null when no class is online)
+function onlineNoteFor(items: ScheduleItem[], ctx: Context): string | null {
+  const online = items.filter((i) => i.online);
+  if (online.length === 0) return null;
+  const who = online
+    .map((i) => `${i.code} (${i.professor.split(" ").pop()}, ${i.rating === null ? "no ratings" : `${i.rating.toFixed(1)}★`}${i.suggested ? ", suggested" : ""})`)
+    .join(", ");
+  const k = online.length;
+  return k >= ctx.prefs.numOnline
+    ? `Your ${k} online slot${k > 1 ? "s are" : " is"} used by ${who}`
+    : `${k} of your ${ctx.prefs.numOnline} online slots used by ${who}`;
+}
+
+function toSchedule(f: Found, ctx: Context, strategy: Strategy | null): Schedule {
+  const items = [...f.items]
+    .sort((a, b) => a.code.localeCompare(b.code))
+    .map((item) => ({ ...item, alternative: findAlternative(item, f.items.filter((o) => o !== item), ctx) }));
+  const avgRating = Math.round(f.avgRating * 100) / 100;
+  const daysOnCampus = daysOnCampusOf(items);
+  return { strategy, highlight: highlightFor(items, avgRating, daysOnCampus, strategy, ctx), badges: [], onlineNote: onlineNoteFor(items, ctx), items, score: Math.round(f.score * 10) / 10, avgRating, daysOnCampus };
+}
+
+// Best schedule first for each strategy. Ties on the main number are broken by the balanced score.
+// Only schedules with the most courses compete, so "Best Professors" can't win by dropping a course.
+function rank(found: Found[], strategy: Strategy): Found[] {
+  const most = Math.max(...found.map((f) => f.items.length));
+  const withDays = found.filter((f) => f.items.length === most).map((f) => ({ f, days: daysOnCampusOf(f.items) }));
+  withDays.sort((a, b) => {
+    if (strategy === "professors" && a.f.avgRating !== b.f.avgRating) return b.f.avgRating - a.f.avgRating;
+    if (strategy === "fewestDays" && a.days !== b.days) return a.days - b.days;
+    return b.f.score - a.f.score;
+  });
+  return withDays.map((x) => x.f);
 }
 
 // ---------- Main function ----------
 
-export function buildSchedules(input: SchedulerInput): SchedulerResult {
+// Busy times + AI hard rules + soft rules for one request
+function makeContext(input: SchedulerInput): Context {
   const { preferences: prefs, aiRules } = input;
-  const notes: string[] = [];
 
   // Hard time blocks: busy times from the student and hard rules from the AI
   const busy: Busy[] = [];
@@ -402,17 +549,52 @@ export function buildSchedules(input: SchedulerInput): SchedulerResult {
   for (const r of aiRules?.hardRules ?? []) busy.push({ day: r.day, start: toMinutes(r.start), end: toMinutes(r.end) });
 
   const softRules = aiRules?.softRules ?? [];
-  const ctx: Context = {
+  return {
     prefs,
     busy,
     softRules,
     interests: softRules.filter((r) => r.type === "interest").map((r) => r.value),
     campus: input.campus,
+    year: input.year,
   };
+}
 
-  // Selected courses (labs are added automatically, so a lab code on its own is ignored)
+// "Choose This Option": put `newItem` in place of the course at `index`. Rechecks time conflicts, busy times,
+// AI hard rules and the online limit. Returns the new schedule, or a short error message.
+export function swapItem(input: SchedulerInput, schedule: Schedule, index: number, newItem: ScheduleItem): { schedule: Schedule } | { error: string; onlineLimit?: boolean } {
+  const ctx = makeContext(input);
+  const others = schedule.items.filter((_, i) => i !== index);
+  if (hitsBusy(newItem.blocks, ctx.busy)) return { error: "That section overlaps a time you can’t take classes." };
+  if (others.some((o) => blocksConflict(o.blocks, newItem.blocks))) return { error: "That section conflicts with another class in this schedule." };
+  if (others.filter((o) => o.online).length + (newItem.online ? 1 : 0) > ctx.prefs.numOnline) {
+    return { error: "That would be more online classes than you chose.", onlineLimit: true };
+  }
+  const items = schedule.items.map((item, i) => (i === index ? { ...newItem, alternative: null } : item));
+  const avgRating = Math.round(averageRating(items) * 100) / 100;
+  const daysOnCampus = daysOnCampusOf(items);
+  return { schedule: { ...schedule, items, avgRating, daysOnCampus, highlight: highlightFor(items, avgRating, daysOnCampus, schedule.strategy, ctx), badges: [], onlineNote: onlineNoteFor(items, ctx) } };
+}
+
+type Solved = { found: Found[]; ctx: Context; selected: { code: string; title: string }[]; notes: string[] };
+
+// Finds all complete schedules (best first). Tries a small set of options per course, then a wider one.
+function solve(input: SchedulerInput): Solved {
+  const { preferences: prefs, aiRules } = input;
+  const notes: string[] = [];
+
+  const ctx = makeContext(input);
+
+  // Selected courses (labs are added automatically, so a lab code on its own is ignored).
+  // A course the student already took is never scheduled, even if it was selected.
+  const taken = new Set(input.takenCourses.map(normCode));
   const selected = input.selectedCourses
+    .map(normCode)
     .filter((code, i, all) => all.indexOf(code) === i)
+    .filter((code) => {
+      if (!taken.has(code)) return true;
+      notes.push(`${code} is already in your taken courses, so it was not scheduled.`);
+      return false;
+    })
     .map((code) => ({ code, title: findCourse(code)?.title ?? sectionsByCourse.get(code)?.[0]?.title ?? code }))
     .filter((c) => sectionsByCourse.has(c.code) && findCourse(c.code));
   const total = prefs.numCourses > 0 ? prefs.numCourses : selected.length;
@@ -424,16 +606,15 @@ export function buildSchedules(input: SchedulerInput): SchedulerResult {
     }
   }
 
-  // Try a small set of options per course first, then a wider one if nothing fits
   for (const cap of [MAX_OPTIONS_PER_COURSE, WIDER_OPTIONS_PER_COURSE]) {
     const required: Entry[] = selected
       .map((c) => ({ code: c.code, suggested: false, ...buildOptions(c, ctx, cap) }))
       .filter((e) => e.open.length + e.waitlist.length > 0)
       .sort((a, b) => a.open.length + a.waitlist.length - (b.open.length + b.waitlist.length));
 
-    // Open slots beyond the selected courses: degree-plan courses first, then electives matching "interest" rules
+    // Open slots beyond the selected courses: level-fitting courses first (see suggestedEntries)
     const extraSlots = Math.max(0, total - selected.length);
-    const suggested: Entry[] = extraSlots > 0 ? suggestedEntries(input, ctx) : [];
+    const suggested: Entry[] = extraSlots > 0 ? suggestedEntries(input, ctx, selected.map((c) => c.code)) : [];
     const entries = [...required, ...suggested];
 
     // If the selected courses cannot all fit, try with one course fewer, and so on
@@ -441,56 +622,84 @@ export function buildSchedules(input: SchedulerInput): SchedulerResult {
     for (let target = start; target >= 1; target--) {
       const found = search(entries, target, extraSlots, ctx);
       if (found.length === 0) continue;
-
       found.sort((a, b) => b.score - a.score);
-      const top = pickTop(found, 3);
-      const topSignatures = new Set(top.map((f) => signature(f.items)));
-      const best = top[0];
 
-      // "Worth considering": best schedule when preferred days/times are ignored, if its professors are clearly better
-      const better = found
-        .filter((f) => f.avgRating >= best.avgRating + WORTH_CONSIDERING_GAP && !topSignatures.has(signature(f.items)))
-        .sort((a, b) => b.relaxedScore - a.relaxedScore)[0];
-
-      const placed = new Set(best.items.map((i) => i.code));
+      const placed = new Set(found[0].items.map((i) => i.code));
       for (const c of selected) {
         if (!placed.has(c.code) && !notes.some((n) => n.startsWith(c.code))) {
           notes.push(`${c.code} did not fit with your other courses and rules, so it was left out.`);
         }
       }
-      return { schedules: top.map(toSchedule), worthConsidering: better ? toSchedule(better) : null, notes };
+      // Not enough suggested courses fit the preferred days and times: leave the slot empty and say so
+      const most = Math.max(...found.map((f) => f.items.length));
+      const missing = notes.every((n) => !n.includes("left out")) && most < total;
+      if (missing) notes.push(`Couldn’t find a ${ordinal(most + 1)} course that fits your days and times.`);
+      return { found, ctx, selected, notes };
     }
   }
 
   notes.push("No schedule fits all your rules. Try fewer busy times or more campuses/days.");
-  return { schedules: [], worthConsidering: null, notes };
+  return { found: [], ctx, selected, notes };
 }
 
-function suggestedEntries(input: SchedulerInput, ctx: Context): Entry[] {
-  const selected = input.selectedCourses;
+export function buildSchedules(input: SchedulerInput): SchedulerResult {
+  const { found, ctx, notes } = solve(input);
+  if (found.length === 0) return { schedules: [], notes };
+
+  // Each strategy takes its best schedule. If that is identical to a schedule already chosen, the strategy gets no
+  // tab of its own: the earlier tab gets a badge instead ("Also the highest-rated option" / "Also the fewest days").
+  const chosen: { strategy: Strategy; f: Found; badges: string[] }[] = [];
+  for (const strategy of STRATEGIES) {
+    const top = rank(found, strategy)[0];
+    const same = chosen.find((c) => signature(c.f.items) === signature(top.items));
+    if (!same) chosen.push({ strategy, f: top, badges: [] });
+    else if (strategy === "professors") same.badges.push("⭐ Also the highest-rated option");
+    else if (strategy === "fewestDays") same.badges.push("📅 Also the fewest days");
+  }
+  return { schedules: chosen.map((c) => ({ ...toSchedule(c.f, ctx, c.strategy), badges: c.badges })), notes };
+}
+
+// "+ Find another": the best balanced schedule that differs from every schedule already shown in at least 2
+// courses or professors. Pass every schedule shown so far (tabs and earlier "another" results). null = no more.
+export function getNextSchedule(input: SchedulerInput, alreadyShown: Schedule[]): Schedule | null {
+  const { found, ctx } = solve(input);
+  const next = rank(found, "best").find((f) => alreadyShown.every((s) => differences(f.items, s.items) >= MIN_DIFFERENT));
+  return next ? toSchedule(next, ctx, null) : null;
+}
+
+// Courses to fill open slots, in this order (max 6):
+//  1. electives that match an "interest" rule and fit the student's year (juniors: 2000-4000)
+//  2. degree-plan courses that fit the year
+//  3. other degree-plan courses not taken yet (required core, even if lower level)
+// A course in takenCourses, or whose prerequisites are not all in takenCourses, is never suggested.
+function suggestedEntries(input: SchedulerInput, ctx: Context, selectedCodes: string[]): Entry[] {
   const entries: Entry[] = [];
-  const used = new Set<string>(selected);
+  const taken = new Set(input.takenCourses.map(normCode));
+  const used = new Set<string>(selectedCodes);
+  const fitLevels = FIT_LEVELS[input.year ?? ""] ?? [];
+  const canTake = (c: Course) => !taken.has(normCode(c.code)) && c.prerequisites.every((p) => taken.has(normCode(p)));
 
   const add = (course: Course, reason: string) => {
-    if (entries.length >= MAX_SUGGESTED_CANDIDATES || used.has(course.code)) return;
+    if (entries.length >= MAX_SUGGESTED_CANDIDATES || used.has(course.code) || !canTake(course)) return;
     const options = buildOptions(course, ctx, 3, reason);
     if (options.open.length === 0) return;
     used.add(course.code);
     entries.push({ code: course.code, suggested: true, ...options });
   };
 
-  // 1. Degree-plan courses the student can take now
-  for (const r of recommend(input, selected, 20)) add(r.course, hasOwnPlan(input.major) ? `Required for ${input.major}` : "Required core course");
+  const plan = getDegreePlan(input.major);
+  const planCourses = recommend(input, selectedCodes, 100).map((r) => r.course);
+  const planReason = hasOwnPlan(input.major) ? `Required for ${input.major}` : "Required core course";
 
-  // 2. Electives that match what the student said they like
   if (ctx.interests.length > 0) {
-    const plan = getDegreePlan(input.major);
     for (const c of courses) {
-      if (!c.isElective || plan.includes(c.code) || input.takenCourses.includes(c.code)) continue;
-      if (!c.prerequisites.every((p) => input.takenCourses.includes(p))) continue;
-      if (matchesInterest(c, ctx.interests)) add(c, "Elective that matches your interests");
+      if (c.isElective && !plan.includes(c.code) && (INTEREST_LEVELS[input.year ?? ""] ?? []).includes(c.level) && matchesInterest(c, ctx.interests)) {
+        add(c, "Elective that matches your interests");
+      }
     }
   }
+  for (const c of planCourses) if (fitLevels.includes(c.level)) add(c, planReason);
+  for (const c of planCourses) add(c, planReason);
   return entries;
 }
 
