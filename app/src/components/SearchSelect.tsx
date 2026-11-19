@@ -15,10 +15,11 @@ type Props = {
   // Multi-pick mode (e.g. courses): picking calls onSelect and clears the box,
   // and typing never picks anything by itself.
   clearOnPick?: boolean;
+  getKey?: (item: string) => string; // unique React key for an option (default: the option text)
 };
 
 // Search box + list. Tap the box to see all options, type to filter, tap one to pick it.
-export default function SearchSelect({ options, value, onSelect, placeholder, onDark, error, onOpen, emptyText = "No results found", clearOnPick }: Props) {
+export default function SearchSelect({ options, value, onSelect, placeholder, onDark, error, onOpen, emptyText = "No results found", clearOnPick, getKey = (item) => item }: Props) {
   const [text, setText] = useState(value ?? "");
   const [open, setOpen] = useState(false);
 
@@ -78,7 +79,7 @@ export default function SearchSelect({ options, value, onSelect, placeholder, on
               <Text style={styles.empty}>{emptyText}</Text>
             ) : (
               results.map((item) => (
-                <Pressable key={item} style={styles.row} onPress={() => handlePick(item)}>
+                <Pressable key={getKey(item)} style={styles.row} onPress={() => handlePick(item)}>
                   {renderLabel(item)}
                 </Pressable>
               ))

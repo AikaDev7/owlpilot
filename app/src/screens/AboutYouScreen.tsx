@@ -4,7 +4,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation";
 import { colors, fonts } from "../theme";
 import { majors } from "../data/majors";
-import { courses, courseLabel } from "../mock/courses";
+import { courses, courseLabel, courseKey } from "../mock/courses";
 import { useProfile } from "../context/ProfileContext";
 import Chip from "../components/Chip";
 import Dropdown from "../components/Dropdown";
@@ -140,6 +140,7 @@ export default function AboutYouScreen({ navigation, route }: Props) {
           <View style={styles.field}>
             <SearchSelect
               clearOnPick
+              getKey={courseKey}
               options={availableCourses}
               value={null}
               onSelect={(item) => item && addCourse(item)}

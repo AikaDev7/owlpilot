@@ -32,8 +32,6 @@ export const courses: Course[] = [
   course("BIOL 1108", "Biology II", ["BIOL 1107"]),
   course("CHEM 1211", "General Chemistry I"),
   course("PHYS 2211", "Introductory Physics I", ["MATH 1113"]),
-  course("PSYC 1101", "Intro to Psychology"),
-  course("SOCI 1101", "Intro to Sociology"),
   course("ECON 2105", "Principles of Macroeconomics"),
   course("ECON 2106", "Principles of Microeconomics"),
   course("POLS 1101", "American Government"),
@@ -49,6 +47,15 @@ export const courses: Course[] = [
   course("ECON 2100", "Global Economics", [], true),
 ];
 
+// Dev-only check: every course code must be unique (duplicates break React list keys).
+if (__DEV__) {
+  const seen = new Set<string>();
+  for (const c of courses) {
+    if (seen.has(c.code)) console.warn(`Duplicate course code in src/mock/courses.ts: ${c.code}`);
+    seen.add(c.code);
+  }
+}
+
 // Find a course by its code, e.g. "CS 1301"
 export function findCourse(code: string) {
   return courses.find((c) => c.code === code);
@@ -57,4 +64,9 @@ export function findCourse(code: string) {
 // "CS 1301 Programming Principles I", the text shown in the search list
 export function courseLabel(c: Course) {
   return `${c.code} ${c.title}`;
+}
+
+// "CS 1301 Programming Principles I" -> "CS 1301", used as the React key in course lists
+export function courseKey(label: string) {
+  return label.split(" ").slice(0, 2).join(" ");
 }
