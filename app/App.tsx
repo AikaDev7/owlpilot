@@ -7,6 +7,8 @@ import { useFonts, Manrope_400Regular, Manrope_500Medium, Manrope_600SemiBold, M
 import { Outfit_400Regular, Outfit_500Medium } from "@expo-google-fonts/outfit";
 import { RootStackParamList } from "./src/navigation";
 import SplashScreenView from "./src/screens/SplashScreen";
+import WelcomeScreen from "./src/screens/WelcomeScreen";
+import AboutYouScreen from "./src/screens/AboutYouScreen";
 import HomeScreen from "./src/screens/HomeScreen";
 
 // Keep the native splash visible until the fonts are ready
@@ -35,6 +37,8 @@ export default function App() {
       <StatusBar style="auto" />
       <Stack.Navigator initialRouteName="Splash" screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Splash" component={SplashScreenView} />
+        <Stack.Screen name="Welcome" component={WelcomeScreen} />
+        <Stack.Screen name="AboutYou" component={AboutYouScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
       </Stack.Navigator>
     </NavigationContainer>

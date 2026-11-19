@@ -2,5 +2,7 @@
 // Add new screens here as you build them.
 export type RootStackParamList = {
   Splash: undefined;
+  Welcome: undefined;
+  AboutYou: { major: string };
   Home: undefined;
 };

@@ -1,9 +1,24 @@
 // Colors and fonts taken from the OwlPilot Figma design.
 export const colors = {
+  // Main 4 brand colors
   yellow: "#FFC629",
   black: "#000000",
   white: "#FFFFFF",
   lightGray: "#F5F5F5",
+
+  // Extra grays and accents used by components
+  textDark: "#1A1A1A", // titles on light screens
+  textGray: "#3F3F3F", // small subtitles
+  buttonText: "#131313", // text on yellow buttons
+  yellowBorder: "#D59C00", // border of selected chips
+  inputGray: "#EAEAEA", // input background on light screens
+  inputBorder: "#D6D6D6",
+  chipGray: "#EBEBEB", // unselected chip background
+  chipText: "#333333",
+  placeholder: "#5A5A5A",
+  placeholderDark: "#7B7B7B", // placeholder on the Welcome screen
+  progressGray: "#C3C3C3", // unfinished progress bar segments
+  error: "#E21C1C", // red for validation errors
 };
 
 export const fonts = {
@@ -15,4 +30,13 @@ export const fonts = {
   bodyMedium: "Manrope_500Medium",
   bodySemiBold: "Manrope_600SemiBold",
   bodyBold: "Manrope_700Bold",
+};
+
+// Same soft shadow every component uses (iOS shadow* + Android elevation)
+export const shadow = {
+  shadowColor: "#000000",
+  shadowOffset: { width: 1, height: 2 },
+  shadowOpacity: 0.25,
+  shadowRadius: 3,
+  elevation: 3,
 };

@@ -7,9 +7,9 @@ import { colors, fonts } from "../theme";
 type Props = NativeStackScreenProps<RootStackParamList, "Splash">;
 
 export default function SplashScreen({ navigation }: Props) {
-  // Wait 2 seconds, then go to Home (replace so Back doesn't return here)
+  // Wait 2 seconds, then go to Welcome (replace so Back doesn't return here)
   useEffect(() => {
-    const timer = setTimeout(() => navigation.replace("Home"), 2000);
+    const timer = setTimeout(() => navigation.replace("Welcome"), 2000);
     return () => clearTimeout(timer);
   }, [navigation]);
 
