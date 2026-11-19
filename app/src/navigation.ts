@@ -6,5 +6,6 @@ export type RootStackParamList = {
   AboutYou: { major: string };
   SelectCourses: undefined;
   Preferences: undefined;
+  Building: undefined;
   Home: undefined;
 };

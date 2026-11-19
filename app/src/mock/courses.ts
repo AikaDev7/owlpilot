@@ -1,11 +1,12 @@
 // Fake courses for the course pickers and the recommendations.
 // level = 1000 / 2000 / 3000 / 4000, prerequisites = course codes.
-export type Course = { code: string; title: string; level: number; prerequisites: string[] };
+export type Course = { code: string; title: string; level: number; prerequisites: string[]; isElective?: boolean };
 
 // Small helper so the list below stays short. The level comes from the course number (CS 3305 -> 3000).
-function course(code: string, title: string, prerequisites: string[] = []): Course {
+function course(code: string, title: string, prerequisites: string[] = [], isElective = false): Course {
   const number = Number(code.split(" ")[1]);
-  return { code, title, level: Math.floor(number / 1000) * 1000, prerequisites };
+  const level = Math.floor(number / 1000) * 1000;
+  return isElective ? { code, title, level, prerequisites, isElective } : { code, title, level, prerequisites };
 }
 
 export const courses: Course[] = [
@@ -36,10 +37,16 @@ export const courses: Course[] = [
   course("ECON 2105", "Principles of Macroeconomics"),
   course("ECON 2106", "Principles of Microeconomics"),
   course("POLS 1101", "American Government"),
-  course("ARTS 1100", "Art Appreciation"),
-  course("MUSC 1100", "Music Appreciation"),
-  course("COMM 1110", "Public Speaking"),
+  course("ARTS 1100", "Art Appreciation", [], true),
+  course("MUSC 1100", "Music Appreciation", [], true),
+  course("COMM 1110", "Public Speaking", [], true),
   course("STAT 1220", "Intro to Statistics", ["MATH 1111"]),
+
+  // Electives (isElective: true). The scheduler uses these to fill open slots.
+  course("PSYC 1101", "Intro to Psychology", [], true),
+  course("PHIL 2010", "Intro to Philosophy", [], true),
+  course("SOCI 1101", "Intro to Sociology", [], true),
+  course("ECON 2100", "Global Economics", [], true),
 ];
 
 // Find a course by its code, e.g. "CS 1301"

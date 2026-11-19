@@ -26,6 +26,13 @@ export const colors = {
   textMuted: "#5B5B5B", // subtitles in lists and "Options for You"
   labelGray: "#313131", // small label inside the semester/campus boxes
   divider: "#999999", // line between recommendation rows
+  fieldBorder: "#C3C3C3", // border of the compact dropdowns and notes box
+  notesBg: "#F3F3F3", // notes box background
+  notesPlaceholder: "#797979",
+  dropdownText: "#2D2D2D", // value text in compact dropdowns
+  cardTitle: "#232323", // time card title when selected
+  cardSubtext: "#494949", // time card small range
+  cardSubtextSelected: "#383838",
   overlay: "rgba(0,0,0,0.4)", // dim background behind modals
 };
 

@@ -1,5 +1,17 @@
 import { createContext, ReactNode, useContext, useState } from "react";
 
+export type BusyTime = { days: string[]; start: number; end: number }; // start/end = minutes after midnight
+
+// Step 3 answers. Times of day are "Morning" | "Afternoon" | "Evening" | "Anytime".
+export type Preferences = {
+  numCourses: number;
+  days: string[]; // "Mon".."Fri"
+  times: string[];
+  numOnline: number;
+  notes: string;
+  busyTimes: BusyTime[];
+};
+
 // What the user told us in the onboarding steps. Later screens read it with useProfile().
 export type Profile = {
   major: string | null;
@@ -10,9 +22,10 @@ export type Profile = {
   semester: string | null; // e.g. "Spring 2027" (set on Select Courses)
   campus: string | null; // "Kennesaw" or "Marietta"
   selectedCourses: string[]; // course codes picked for next term
+  preferences: Preferences | null; // set on the Preferences screen
 };
 
-const emptyProfile: Profile = { major: null, year: null, startYear: null, gradYear: null, takenCourses: [], semester: null, campus: null, selectedCourses: [] };
+const emptyProfile: Profile = { major: null, year: null, startYear: null, gradYear: null, takenCourses: [], semester: null, campus: null, selectedCourses: [], preferences: null };
 
 type ProfileContextValue = {
   profile: Profile;
