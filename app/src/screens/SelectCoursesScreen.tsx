@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation";
 import { colors, fonts } from "../theme";
-import { courses, courseLabel, courseKey, findCourse } from "../mock/courses";
+import { courses, courseLabel, courseKey, findCourse } from "../data/courses";
 import { recommend } from "../logic/recommend";
 import { useProfile } from "../context/ProfileContext";
 import Dropdown from "../components/Dropdown";

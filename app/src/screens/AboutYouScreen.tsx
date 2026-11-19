@@ -4,7 +4,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation";
 import { colors, fonts } from "../theme";
 import { majors } from "../data/majors";
-import { courses, courseLabel, courseKey } from "../mock/courses";
+import { courses, courseLabel, courseKey } from "../data/courses";
 import { useProfile } from "../context/ProfileContext";
 import Chip from "../components/Chip";
 import Dropdown from "../components/Dropdown";

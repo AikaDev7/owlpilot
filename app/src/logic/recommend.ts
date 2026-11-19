@@ -1,4 +1,4 @@
-import { Course, findCourse } from "../mock/courses";
+import { Course, findCourse } from "../data/courses";
 import { getDegreePlan, hasOwnPlan } from "../mock/degreePlans";
 import { Profile } from "../context/ProfileContext";
 
@@ -14,7 +14,7 @@ const levelsForYear: Record<string, number[]> = {
 
 // Up to 5 courses from the degree plan that the user can take now:
 // not taken yet, not already selected, and every prerequisite is in takenCourses.
-export function recommend(profile: Profile, selectedCodes: string[], max = 5): Recommendation[] {
+export function recommend(profile: Pick<Profile, "major" | "year" | "takenCourses">, selectedCodes: string[], max = 5): Recommendation[] {
   const fitLevels = (profile.year && levelsForYear[profile.year]) || [];
 
   const options = getDegreePlan(profile.major)

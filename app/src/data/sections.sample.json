@@ -1,0 +1,84 @@
+[
+  {
+    "term": "Spring Semester 2027",
+    "course": "AI 2000",
+    "title": "Intro to AI Programming",
+    "honors": false,
+    "crn": "10754",
+    "section": "01",
+    "professor": "Maxwell Bradley",
+    "campus": "Marietta Campus",
+    "mode": "Traditional F2F",
+    "credits": 3,
+    "meetings": [
+      {
+        "days": [
+          "Mon",
+          "Wed",
+          "Fri"
+        ],
+        "start": "11:30",
+        "end": "12:25",
+        "building": "Q",
+        "buildingName": "Engineering Technology Center",
+        "room": "311"
+      }
+    ],
+    "capacity": 40,
+    "enrolled": 9,
+    "seatsAvailable": 31,
+    "waitCount": 0,
+    "waitCapacity": 10,
+    "isFull": false
+  },
+  {
+    "term": "Spring Semester 2027",
+    "course": "AI 2000",
+    "title": "Intro to AI Programming",
+    "honors": false,
+    "crn": "10756",
+    "section": "W01",
+    "professor": "Maxwell Bradley",
+    "campus": "KSU Online",
+    "mode": "Fully at a Distance",
+    "credits": 3,
+    "meetings": [],
+    "capacity": 40,
+    "enrolled": 27,
+    "seatsAvailable": 13,
+    "waitCount": 0,
+    "waitCapacity": 10,
+    "isFull": false
+  },
+  {
+    "term": "Spring Semester 2027",
+    "course": "AI 3642",
+    "title": "Artificial Intelligence",
+    "honors": false,
+    "crn": "10796",
+    "section": "01",
+    "professor": "TBA",
+    "campus": "Marietta Campus",
+    "mode": "Hybrid - 33 percent Online",
+    "credits": 3,
+    "meetings": [
+      {
+        "days": [
+          "Mon",
+          "Wed"
+        ],
+        "start": "15:00",
+        "end": "15:55",
+        "building": "Q",
+        "buildingName": "Engineering Technology Center",
+        "room": "109"
+      }
+    ],
+    "capacity": 40,
+    "enrolled": 11,
+    "seatsAvailable": 29,
+    "waitCount": 0,
+    "waitCapacity": 10,
+    "isFull": false
+  }
+]

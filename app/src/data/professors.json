@@ -1,0 +1,411 @@
+[
+ {
+  "name": "Alan Shaw",
+  "department": "Computer Science",
+  "courses": [
+   "CS 4722"
+  ],
+  "rating": 4,
+  "difficulty": 2.1,
+  "wouldTakeAgain": 87,
+  "numRatings": 48,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/949332"
+ },
+ {
+  "name": "Ben Setzer",
+  "department": "Computer Science",
+  "courses": [
+   "CS 4722"
+  ],
+  "rating": 4.1,
+  "difficulty": 2.6,
+  "wouldTakeAgain": 54,
+  "numRatings": 42,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/48402"
+ },
+ {
+  "name": "Betty Kretlow",
+  "department": "Computer Science",
+  "courses": [
+   "CSE 1101",
+   "CSE 1321"
+  ],
+  "rating": 4.4,
+  "difficulty": 2,
+  "wouldTakeAgain": 86,
+  "numRatings": 44,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/2370028"
+ },
+ {
+  "name": "Coskun Cetinkaya",
+  "department": "Computer Science",
+  "courses": [
+   "AI 3642",
+   "CS 3622"
+  ],
+  "rating": 3.4,
+  "difficulty": 3.3,
+  "wouldTakeAgain": 67,
+  "numRatings": 27,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/2776926"
+ },
+ {
+  "name": "Dan Lo",
+  "department": "Computer Science",
+  "courses": [
+   "CS 4265"
+  ],
+  "rating": 2.3,
+  "difficulty": 2.7,
+  "wouldTakeAgain": 33,
+  "numRatings": 3,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/3093805"
+ },
+ {
+  "name": "Emin Mary Abraham",
+  "department": "Computer Science",
+  "courses": [
+   "CS 3410",
+   "CS 4308"
+  ],
+  "rating": 2.3,
+  "difficulty": 3.8,
+  "wouldTakeAgain": 35,
+  "numRatings": 20,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/2829986"
+ },
+ {
+  "name": "Ermias Mamo",
+  "department": "Computer Science",
+  "courses": [
+   "CSE 1321"
+  ],
+  "rating": 2.6,
+  "difficulty": 3.1,
+  "wouldTakeAgain": 37,
+  "numRatings": 42,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/2286818"
+ },
+ {
+  "name": "Eun Sik Kim",
+  "department": "Computer Science",
+  "courses": [
+   "CSE 1321",
+   "CSE 1321L"
+  ],
+  "rating": 3,
+  "difficulty": 3.7,
+  "wouldTakeAgain": 50,
+  "numRatings": 3,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/3057279"
+ },
+ {
+  "name": "Harshitha Nirujogi",
+  "department": "Computer Science",
+  "courses": [
+   "CSE 1321",
+   "CSE 1321L",
+   "CSE 1322",
+   "CSE 1322L"
+  ],
+  "rating": 1.8,
+  "difficulty": 2.1,
+  "wouldTakeAgain": 33,
+  "numRatings": 14,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/3037657"
+ },
+ {
+  "name": "Hisham Haddad",
+  "department": "Computer Science",
+  "courses": [
+   "CS 3305"
+  ],
+  "rating": 2.7,
+  "difficulty": 4.1,
+  "wouldTakeAgain": 35,
+  "numRatings": 89,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/272340"
+ },
+ {
+  "name": "John Hess",
+  "department": "Computer Science",
+  "courses": [
+   "CSE 2300",
+   "CSE 3801"
+  ],
+  "rating": 3,
+  "difficulty": 1.5,
+  "wouldTakeAgain": 60,
+  "numRatings": 4,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/3129822"
+ },
+ {
+  "name": "Jyothsna Dinadayalane",
+  "department": "Computer Science",
+  "courses": [
+   "CS 4306",
+   "CS 4322"
+  ],
+  "rating": 4.3,
+  "difficulty": 2.3,
+  "wouldTakeAgain": 78,
+  "numRatings": 8,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/2921112"
+ },
+ {
+  "name": "Lavanya Pondichery Sekar",
+  "department": "Computer Science",
+  "courses": [
+   "CSE 3801"
+  ],
+  "rating": 2.8,
+  "difficulty": 3.5,
+  "wouldTakeAgain": 46,
+  "numRatings": 25,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/2788088"
+ },
+ {
+  "name": "Lingyan Wang",
+  "department": "Computer Science",
+  "courses": [
+   "CS 3305",
+   "CS 3622"
+  ],
+  "rating": 1.3,
+  "difficulty": 3.6,
+  "wouldTakeAgain": 6,
+  "numRatings": 17,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/2830520"
+ },
+ {
+  "name": "Manohar Raavi",
+  "department": "Computer Science",
+  "courses": [
+   "CS 4626"
+  ],
+  "rating": null,
+  "difficulty": null,
+  "wouldTakeAgain": null,
+  "numRatings": 0,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/3156504"
+ },
+ {
+  "name": "Maxwell Bradley",
+  "department": "Computer Science",
+  "courses": [
+   "AI 2000",
+   "CS 3502",
+   "CS 4412"
+  ],
+  "rating": 3.3,
+  "difficulty": 1.5,
+  "wouldTakeAgain": 40,
+  "numRatings": 4,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/3125139"
+ },
+ {
+  "name": "Michail Alexiou",
+  "department": "Computer Science",
+  "courses": [
+   "AI 4732"
+  ],
+  "rating": 4.5,
+  "difficulty": 2.8,
+  "wouldTakeAgain": 83,
+  "numRatings": 6,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/3025497"
+ },
+ {
+  "name": "Mona Chavoshi",
+  "department": "Computer Science",
+  "courses": [
+   "CSE 3153"
+  ],
+  "rating": 2.5,
+  "difficulty": 3.1,
+  "wouldTakeAgain": 40,
+  "numRatings": 29,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/2320875"
+ },
+ {
+  "name": "Muhammad Usman",
+  "department": "Computer Science",
+  "courses": [
+   "CSE 1101",
+   "CSE 1321",
+   "CSE 1322"
+  ],
+  "rating": 4,
+  "difficulty": 2,
+  "wouldTakeAgain": 100,
+  "numRatings": 1,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/3111875"
+ },
+ {
+  "name": "Oscar Garcia",
+  "department": "Computer Science",
+  "courses": [
+   "CS 3626",
+   "CS 4522",
+   "CS 4632"
+  ],
+  "rating": 2.3,
+  "difficulty": 4.1,
+  "wouldTakeAgain": 35,
+  "numRatings": 32,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/2801336"
+ },
+ {
+  "name": "Patrick Bobbie",
+  "department": "Computer Science",
+  "courses": [
+   "CS 4504"
+  ],
+  "rating": 2.2,
+  "difficulty": 4.2,
+  "wouldTakeAgain": 21,
+  "numRatings": 100,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/548394"
+ },
+ {
+  "name": "Sanghoon Lee",
+  "department": "Computer Science",
+  "courses": [
+   "AI 4732"
+  ],
+  "rating": 2.9,
+  "difficulty": 3.7,
+  "wouldTakeAgain": 45,
+  "numRatings": 29,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/2461865"
+ },
+ {
+  "name": "Sarah North",
+  "department": "Computer Science",
+  "courses": [
+   "CS 3410",
+   "CS 4308",
+   "CS 4712"
+  ],
+  "rating": 3.4,
+  "difficulty": 2.9,
+  "wouldTakeAgain": 68,
+  "numRatings": 189,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/339081"
+ },
+ {
+  "name": "Sharon Perry",
+  "department": "Computer Science",
+  "courses": [
+   "CS 4850"
+  ],
+  "rating": 4.3,
+  "difficulty": 2.7,
+  "wouldTakeAgain": 87,
+  "numRatings": 67,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/2283830"
+ },
+ {
+  "name": "Shimaa Hamza",
+  "department": "Computer Science",
+  "courses": [
+   "CSE 3801"
+  ],
+  "rating": 5,
+  "difficulty": 1.7,
+  "wouldTakeAgain": 100,
+  "numRatings": 7,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/5084821"
+ },
+ {
+  "name": "Srilekha Dodda",
+  "department": "Computer Science",
+  "courses": [
+   "CS 3305",
+   "CS 3502",
+   "CS 4308"
+  ],
+  "rating": 2.3,
+  "difficulty": 3.3,
+  "wouldTakeAgain": 50,
+  "numRatings": 4,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/3166810"
+ },
+ {
+  "name": "Tu Nguyen",
+  "department": "Computer Science",
+  "courses": [
+   "CS 3503"
+  ],
+  "rating": 4.2,
+  "difficulty": 3.5,
+  "wouldTakeAgain": 82,
+  "numRatings": 22,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/2721496"
+ },
+ {
+  "name": "Umama Tasnim",
+  "department": "Computer Science",
+  "courses": [
+   "CS 3305",
+   "CS 3502",
+   "CS 3503"
+  ],
+  "rating": 3.6,
+  "difficulty": 1.9,
+  "wouldTakeAgain": 67,
+  "numRatings": 9,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/2936300"
+ },
+ {
+  "name": "Victor Clincy",
+  "department": "Computer Science",
+  "courses": [
+   "CS 3503",
+   "CS 3622",
+   "CS 4622"
+  ],
+  "rating": 2.7,
+  "difficulty": 4.3,
+  "wouldTakeAgain": 43,
+  "numRatings": 151,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/272248"
+ },
+ {
+  "name": "Wenyun Zhang",
+  "department": "Computer Science",
+  "courses": [
+   "CSE 2300"
+  ],
+  "rating": 4.7,
+  "difficulty": 1.8,
+  "wouldTakeAgain": 96,
+  "numRatings": 24,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/2686483"
+ },
+ {
+  "name": "Xinyue Zhang",
+  "department": "Computer Science",
+  "courses": [
+   "CS 3626"
+  ],
+  "rating": 5,
+  "difficulty": 2.3,
+  "wouldTakeAgain": 100,
+  "numRatings": 4,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/2780008"
+ },
+ {
+  "name": "Yong Shi",
+  "department": "Computer Science",
+  "courses": [
+   "CS 3305",
+   "CS 4524"
+  ],
+  "rating": 3,
+  "difficulty": 2.8,
+  "wouldTakeAgain": 72,
+  "numRatings": 43,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/955046"
+ }
+]

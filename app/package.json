@@ -26,7 +26,8 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "test:scheduler": "tsc -p scripts/tsconfig.json && node node_modules/.cache/scheduler-test/scripts/test-scheduler.js"
   },
   "private": true
 }

@@ -1,0 +1,461 @@
+[
+ {
+  "professor": "Hisham Haddad",
+  "course": "CS 3305",
+  "source": "RMP",
+  "date": "Aug 4th, 2026",
+  "quality": 1.0,
+  "difficulty": 5.0,
+  "text": "I'm telling you if you do not already have a tutor and prior knowledge before class you are risking your GPA and self esteem. He really doesn't care. He has 2 test that are 50% of the class grade…no extra attempts, no multiple choice, no notes, timed, and advanced coding!"
+ },
+ {
+  "professor": "Hisham Haddad",
+  "course": "CS 3305",
+  "source": "RMP",
+  "date": "May 8th, 2026",
+  "quality": 3.0,
+  "difficulty": 3.0,
+  "text": "He teaches the topics well, and they are understandable. However, 50% of your grade comes from 5 questions on the midterm and 5 on the final. The assignments need to be well documented, including each function block of code, otherwise you will get deductions. The professor is good, but I would…"
+ },
+ {
+  "professor": "Hisham Haddad",
+  "course": "CS 3305",
+  "source": "RMP",
+  "date": "May 4th, 2026",
+  "quality": 2.0,
+  "difficulty": 4.0,
+  "text": "He's a very good professor, attending class he will teach you everything and it'll be easy to understand. The assignment aren't super hard just make sure your output matches what's given and comment what things do. The bad part is 50% of your grade is 2 exams with 5 questions each. Gives little…"
+ },
+ {
+  "professor": "Hisham Haddad",
+  "course": "CS 3305",
+  "source": "RMP",
+  "date": "Apr 30th, 2026",
+  "quality": 3.0,
+  "difficulty": 5.0,
+  "text": "Midterm is really difficult, TA's grade harshly af on the homework. Grading is more lenient on the tests. Haddady will explain all the topics really well but your grade might be cooked bro"
+ },
+ {
+  "professor": "Hisham Haddad",
+  "course": "CS 3305",
+  "source": "RMP",
+  "date": "Jan 17th, 2026",
+  "quality": 2.0,
+  "difficulty": 5.0,
+  "text": "Be aware 50% of your grade comes down to 10 questions (5 question midterm & 5 question final that most of the class WILL fail). 10% of your grade is attendance (do not skip) , and 40% are assignments. Be *incredibly thorough in your documentation for assignments* and follow the rubric to the…"
+ },
+ {
+  "professor": "John Hess",
+  "course": "CSE 3801",
+  "source": "RMP",
+  "date": "Jun 12th, 2026",
+  "quality": 3.0,
+  "difficulty": 2.0,
+  "text": "He's a very relaxed grader, but he graded a lot of assignments quite late. Tests were open book/notes and it was all entirely on the pdfs he posts. Team projects were quite simple and straight forward. Assignments had their own sample format he provides. For this course online, I think you'd be…"
+ },
+ {
+  "professor": "John Hess",
+  "course": "CSE 3801",
+  "source": "RMP",
+  "date": "Dec 20th, 2025",
+  "quality": 1.0,
+  "difficulty": 3.0,
+  "text": "His class was very frustrating. During a discussion on ethics in software, he went on a long tangent about his really weird personal projects that felt unrelated and took up most of the class. The class felt disorganized, and the grading and attendance policies made the experience stressful. I…"
+ },
+ {
+  "professor": "John Hess",
+  "course": "CSE 3801",
+  "source": "RMP",
+  "date": "Dec 20th, 2025",
+  "quality": 1.0,
+  "difficulty": 1.0,
+  "text": "RUN. Professor Hess pushes controversial class discussions without moderating (lots of students yelling). He often goes on tangents about his own views and shuts down anyone who disagrees. He overuses AI for EVERYTHING, ignores group project issues, and has yelled at students mid-class. Grading…"
+ },
+ {
+  "professor": "John Hess",
+  "course": "SWE 3623",
+  "source": "RMP",
+  "date": "Dec 15th, 2025",
+  "quality": 5.0,
+  "difficulty": 1.0,
+  "text": "Allows you to skip the final if you are above an 85%. This class really kept my stress levels from skyrocketing while working on my capstone. Thank you, Professor."
+ },
+ {
+  "professor": "John Hess",
+  "course": "SWE 3623",
+  "source": "RMP",
+  "date": "Dec 15th, 2025",
+  "quality": 5.0,
+  "difficulty": 1.0,
+  "text": "Took him for SWE 3623, best class I took this semester. He provides great information and lectures, and gives great feedback. One of the most straight-to-the-point and smooth classes I have ever taken. Take his class before it's full."
+ },
+ {
+  "professor": "Lingyan Wang",
+  "course": null,
+  "source": "RMP",
+  "date": "Dec 13th, 2025",
+  "quality": 1.0,
+  "difficulty": 5.0,
+  "text": "This might be the worst CS professor at KSU. Does not understand english very well and also does not teach anything. Avoid at all costs. This is the only class I have ever withdrawn from."
+ },
+ {
+  "professor": "Lingyan Wang",
+  "course": null,
+  "source": "RMP",
+  "date": "Oct 9th, 2025",
+  "quality": 1.0,
+  "difficulty": 4.0,
+  "text": "Homework assignments are challenging and unclear, and very stubborn. Quizzes and exams are online, but it's the homework that will trip you up. The professor only reads off the slides, and even the slides are not trustworthy. DO NOT TAKE!!!!!!!!"
+ },
+ {
+  "professor": "Lingyan Wang",
+  "course": null,
+  "source": "RMP",
+  "date": "Jul 31st, 2025",
+  "quality": 1.0,
+  "difficulty": 3.0,
+  "text": "CS3410 with this professor is easy but CS3305 is very difficult. Bad lectures. Quizzes(no webcam) are mostly based on self testing questions. Exams with WEBCAM are based everything she posted(all material in d2l and assignment). Textbook are not really needed for the exams. PLEASE visit GTA for…"
+ },
+ {
+  "professor": "Lingyan Wang",
+  "course": null,
+  "source": "RMP",
+  "date": "Jul 31st, 2025",
+  "quality": 1.0,
+  "difficulty": 1.0,
+  "text": "This is not a hard class. Quizzes are no lockdown and the exam are with lockdown but no webcam. The assignment and lab might be very confusing. This professor doesn't properly respond to your email. She either dont understand common English or the material in this course. You wont learn anything…"
+ },
+ {
+  "professor": "Lingyan Wang",
+  "course": null,
+  "source": "RMP",
+  "date": "May 8th, 2025",
+  "quality": 1.0,
+  "difficulty": 5.0,
+  "text": "One of the worst CS professors. You'll have to teach yourself Java. Assignments are long and difficult, tests are beyond the scope of the lectures, and there's no feedback at all. Uses LockDown Browser + webcam, which adds stress. Grading is harsh and support is minimal. Would not recommend."
+ },
+ {
+  "professor": "Michail Alexiou",
+  "course": null,
+  "source": "RMP",
+  "date": "Jun 27th, 2025",
+  "quality": 5.0,
+  "difficulty": 3.0,
+  "text": "He is deeply invested in his research and consistently brings the latest insights into the classroom. His energy and passion for teaching set him apart from professors who seem disengaged he genuinely enjoys what he does. His grading is fair and transparent, and the class emphasizes learning…"
+ },
+ {
+  "professor": "Michail Alexiou",
+  "course": null,
+  "source": "RMP",
+  "date": "Mar 22nd, 2025",
+  "quality": 5.0,
+  "difficulty": 2.0,
+  "text": "I have taken this professor for both undergrad and grad level classes (cs4247 & cs6045) and he is simply an excellent professor. Typically posts lectures online after the in-person lecture. Gives the most feedback I've ever seen from any professor on hw, exams, and projects. Uses jokes and…"
+ },
+ {
+  "professor": "Michail Alexiou",
+  "course": null,
+  "source": "RMP",
+  "date": "Dec 12th, 2024",
+  "quality": 5.0,
+  "difficulty": 1.0,
+  "text": "This guy will make your life easy. Take him if you want to learn about natural language processing and not have to worry too much about passing or failing. Turn in your work on time and you'll do fine."
+ },
+ {
+  "professor": "Michail Alexiou",
+  "course": null,
+  "source": "RMP",
+  "date": "Nov 11th, 2024",
+  "quality": 5.0,
+  "difficulty": 4.0,
+  "text": "Advance algorithms class was wonderful, There were many HomeWorks and projects to be done but they were manageable. He is available for any clarifications. His lectures were very interactive with real world scenarios. We had an extra credit which is an advantage."
+ },
+ {
+  "professor": "Michail Alexiou",
+  "course": null,
+  "source": "RMP",
+  "date": "Nov 11th, 2024",
+  "quality": 5.0,
+  "difficulty": 3.0,
+  "text": "He is one of the best professors I've had. His interactive teaching style and dedication to student success stand out. He's always approachable for clarifications, ensuring a deep understanding of topics. After an excellent experience in Advanced Algorithms, I eagerly enrolled in AI for Security…"
+ },
+ {
+  "professor": "Sanghoon Lee",
+  "course": "CS 7637",
+  "source": "RMP",
+  "date": "May 17th, 2026",
+  "quality": 5.0,
+  "difficulty": 2.0,
+  "text": "Dr Sanghoon Lee is a very kind and understanding professor. I mostly studied the lectures and the tests were pretty fair. Homework and project report also not too bad. I will for sure look out for his other classes he teaches because he cares about your well-being and learning."
+ },
+ {
+  "professor": "Sanghoon Lee",
+  "course": null,
+  "source": "RMP",
+  "date": "May 7th, 2026",
+  "quality": 5.0,
+  "difficulty": 2.0,
+  "text": "Dr. Sanghoon Lee was a very kind and understanding professor. His homework and lectures were just the right difficulty and the exams were very fair. I hope he teaches more classes because I'll look out for his name for sure"
+ },
+ {
+  "professor": "Srilekha Dodda",
+  "course": "CS 3503",
+  "source": "RMP",
+  "date": "Oct 7th, 2026",
+  "quality": 2.0,
+  "difficulty": 3.0,
+  "text": "Good professor but her lectures are a little confusing due to her expecting students to know the information prior to class."
+ },
+ {
+  "professor": "Srilekha Dodda",
+  "course": "CS 3305",
+  "source": "RMP",
+  "date": "Oct 7th, 2026",
+  "quality": 2.0,
+  "difficulty": 2.0,
+  "text": "Good professor with a clear course but I found the lectures to be hard to follow."
+ },
+ {
+  "professor": "Srilekha Dodda",
+  "course": "CS 3305",
+  "source": "RMP",
+  "date": "May 10th, 2026",
+  "quality": 2.0,
+  "difficulty": 5.0,
+  "text": "Most of your grade will be the final and midterm, which are hard to get a good grade on. Each quiz or exam has a study guide with exactly the questions, but there are usually 200+ questions. It is all memorization based with little learning. There were also very little instructional materials,…"
+ },
+ {
+  "professor": "Srilekha Dodda",
+  "course": "CS 3503",
+  "source": "RMP",
+  "date": "May 8th, 2026",
+  "quality": 3.0,
+  "difficulty": 3.0,
+  "text": "I believe Prof. Dodda is new, which could explain a lot of things. However, lectures are fast-paced, so you either know the topic beforehand or learn it after class. Taking notes is hard. For tests, she gives VERY USEFUL study guides, and as long as you study using them, you'll be fine. Homework…"
+ },
+ {
+  "professor": "Tu Nguyen",
+  "course": "CS 3503",
+  "source": "RMP",
+  "date": "Jul 31st, 2026",
+  "quality": 5.0,
+  "difficulty": 2.0,
+  "text": "This is easily one of the best professors I've had, I would recommend this class to everybody."
+ },
+ {
+  "professor": "Tu Nguyen",
+  "course": "CS 3503",
+  "source": "RMP",
+  "date": "Jun 4th, 2026",
+  "quality": 5.0,
+  "difficulty": 3.0,
+  "text": "A kind prof that really wants you to learn the material. Only 2 tests, each worth 50%. But they're easier than the HW, so if you do the HW as practice you will do well on them. His lectures can be a little difficult to understand, but he is very responsive to emails and questions. The course is…"
+ },
+ {
+  "professor": "Tu Nguyen",
+  "course": "CS 3503",
+  "source": "RMP",
+  "date": "May 8th, 2026",
+  "quality": 5.0,
+  "difficulty": 4.0,
+  "text": "Online: Great professor for a difficult course. He is really communicative over email, and wants his students to succeed. He offers you an option for the midterm/final each being 50%. It sounds scary but it's easier to get an A because the tests are take home, and easier than his hw. Just make…"
+ },
+ {
+  "professor": "Tu Nguyen",
+  "course": "CS 3503",
+  "source": "RMP",
+  "date": "May 7th, 2026",
+  "quality": 5.0,
+  "difficulty": 3.0,
+  "text": "Online: good professor for a tough course. Offers 2 grading options: 50% each for midterm and final, or one that includes hw. Do the 50% each one. Sound scary, but if you use the homework as practice, his midterm and final are easier than that."
+ },
+ {
+  "professor": "Tu Nguyen",
+  "course": "CS 3503",
+  "source": "RMP",
+  "date": "Oct 30th, 2025",
+  "quality": 1.0,
+  "difficulty": 5.0,
+  "text": "Mr. Tu is a very difficult professor to study under. He is very critical of you, overly sensitive and spiteful if you do not follow his example. He will lash out if he thinks you're trying to go against his form of teaching. I would never recommend anyone take his class, if you do, good luck!"
+ },
+ {
+  "professor": "Umama Tasnim",
+  "course": "CS 3305",
+  "source": "RMP",
+  "date": "Apr 24th, 2025",
+  "quality": 4.0,
+  "difficulty": 1.0,
+  "text": "This class was very easy. With that being said, she used AI to generate at least one of the assignments. Most topics in this class are the exact same as CSE 1322. If you did well in that class, take this class. You will find it very easy."
+ },
+ {
+  "professor": "Umama Tasnim",
+  "course": "CS 3305",
+  "source": "RMP",
+  "date": "Dec 9th, 2024",
+  "quality": 5.0,
+  "difficulty": 2.0,
+  "text": "If you want to pass data structures, please take this professor. She genuinely wants her students to pass. Good lectures, gives extra credit, and super understanding."
+ },
+ {
+  "professor": "Umama Tasnim",
+  "course": "CS 3305",
+  "source": "RMP",
+  "date": "May 28th, 2024",
+  "quality": 5.0,
+  "difficulty": 2.0,
+  "text": "She is honestly so kind! She is understanding and truly wants you to pass. If you go to her classes often, it gives you a higher chance for her to help you out when it comes to the end of the semester. She does make some mistakes, but at least she realizes them, fixes them and comes back to…"
+ },
+ {
+  "professor": "Umama Tasnim",
+  "course": "CS 3305",
+  "source": "RMP",
+  "date": "May 7th, 2024",
+  "quality": 4.0,
+  "difficulty": 1.0,
+  "text": "Professor Tasnim made passing CS3305 easier than I expected it to be. If you pay attention during her lectures and work the examples along with her (a lot of drawing out how manipulation of certain data structures works - not code heavy), you can pass the class with ease."
+ },
+ {
+  "professor": "Umama Tasnim",
+  "course": "CS 3305",
+  "source": "RMP",
+  "date": "Jan 25th, 2024",
+  "quality": 4.0,
+  "difficulty": 2.0,
+  "text": "I took Professor Tasmin for Data Structures during her first semester of teaching. Although she was disorganized at times, she made an effort to improve her lectures as she went along. She really cared about our learning experience and would spend extra time on the most difficult concepts in the…"
+ },
+ {
+  "professor": "Victor Clincy",
+  "course": "CS 3503",
+  "source": "RMP",
+  "date": "Apr 27th, 2026",
+  "quality": 1.0,
+  "difficulty": 4.0,
+  "text": "Do not take. Very difficult tests with averages sometimes in the 40s, and not being able to go back to a previous question during said exams is one of the most baffling things I have ever seen. Reluctant to give feedback on anything, and lectures with very little passion. Do not take."
+ },
+ {
+  "professor": "Victor Clincy",
+  "course": "CS 4622",
+  "source": "RMP",
+  "date": "Oct 15th, 2026",
+  "quality": 2.0,
+  "difficulty": 5.0,
+  "text": "Dr.Clincy needs to do a revamp on his recordings, there are loud disturbances like calls and emails. The tests are designed for you to fail (he says so in the opening of the class), with some questions being worth almost a 1/4 of the grade (even though there are 20+ questions) and being…"
+ },
+ {
+  "professor": "Victor Clincy",
+  "course": "CS 3622",
+  "source": "RMP",
+  "date": "Sep 16th, 2026",
+  "quality": 1.0,
+  "difficulty": 5.0,
+  "text": "In short, unless you like gambling on curved grading, take someone else or wait another semester. Slides are a waste of time, if you have to take him then transcript his lectures."
+ },
+ {
+  "professor": "Victor Clincy",
+  "course": "CS 3622",
+  "source": "RMP",
+  "date": "May 14th, 2026",
+  "quality": 4.0,
+  "difficulty": 3.0,
+  "text": "Could use the book for 4 exams that were somewhat easy to easy"
+ },
+ {
+  "professor": "Victor Clincy",
+  "course": "CS 3622",
+  "source": "RMP",
+  "date": "May 8th, 2026",
+  "quality": 4.0,
+  "difficulty": 3.0,
+  "text": "Good and fair class overall. Need the book for exams to do good. Uses lockdown browser on tests."
+ },
+ {
+  "professor": "Wenyun Zhang",
+  "course": "CSE 2300",
+  "source": "RMP",
+  "date": "Mar 27th, 2026",
+  "quality": 5.0,
+  "difficulty": 1.0,
+  "text": "If you somehow manage to fail this class, college may not be the way for you man."
+ },
+ {
+  "professor": "Wenyun Zhang",
+  "course": "CSE 2300",
+  "source": "RMP",
+  "date": "Dec 10th, 2025",
+  "quality": 5.0,
+  "difficulty": 1.0,
+  "text": "Let's just put it this way. You get a 99 in this class you've done something wrong. Doesn't take attendance and everything is online open book open note, and she gives multiple attempts. Had 8 quizzes, 3 tests, and one term project which she gives you over a month to do. Highly recommend taking…"
+ },
+ {
+  "professor": "Wenyun Zhang",
+  "course": "CSE 2300",
+  "source": "RMP",
+  "date": "Aug 1st, 2025",
+  "quality": 5.0,
+  "difficulty": 1.0,
+  "text": "Goated professor, you literally have to try to fail, quizzes and exams are open note, have 1 project. That is about it. She is chill, if you are an IT major and have to take this class to satisfy a credit, take her, she is goated. Work is self-explanatory"
+ },
+ {
+  "professor": "Wenyun Zhang",
+  "course": "CSE 2300",
+  "source": "RMP",
+  "date": "Jul 26th, 2025",
+  "quality": 5.0,
+  "difficulty": 1.0,
+  "text": "Overall, this is an easy but valuable course. There are weekly quizzes based on the assigned readings and videos, but you get 3 attempts for each one. The exams are essentially made up of questions from the previous quizzes, though you only get 1 try. There is one major term project, which is…"
+ },
+ {
+  "professor": "Wenyun Zhang",
+  "course": "CSE 2300",
+  "source": "RMP",
+  "date": "Apr 16th, 2025",
+  "quality": 5.0,
+  "difficulty": 4.0,
+  "text": "Few grades but no lockdown on tests or quizzes. Hard concepts but there are plenty of helpful resources. Biggest grade is a Term Project but the grading was very nice, I believe almost all of the class got a 93 and up on the project and it was basic coding. Would definitely take this professor…"
+ },
+ {
+  "professor": "Yong Shi",
+  "course": "CS 3305",
+  "source": "RMP",
+  "date": "Jul 28th, 2026",
+  "quality": 5.0,
+  "difficulty": 2.0,
+  "text": "I thought that Professor Shi was awesome. The tests would occasionally have a sneaky question but for the most part were straight forward. He uploads so much lecture material, does a lecture video to help you prepare for the quiz and exam, plus the quizzes are very similar to the exam. I do…"
+ },
+ {
+  "professor": "Yong Shi",
+  "course": "CS 3305",
+  "source": "RMP",
+  "date": "May 7th, 2023",
+  "quality": 2.0,
+  "difficulty": 4.0,
+  "text": "He was alright. Since there were no other good professors for this class he was the best but that doesn't make him a great professor. His online class has 5 Assignments, 3 Quizzes, 2 Midterms, and a Final. It is tough to understand his lectures and he likes to talk very fast as well. Easier to…"
+ },
+ {
+  "professor": "Yong Shi",
+  "course": "CS 3305",
+  "source": "RMP",
+  "date": "Aug 2nd, 2022",
+  "quality": 3.0,
+  "difficulty": 4.0,
+  "text": "He is very easy to access outside of class and understands students have outside problems; he moved one quiz for us and pushed back an assignment date for us too. He made review videos for tests/quizzes that are super helpful and I recommend studying the quizzes before the tests."
+ },
+ {
+  "professor": "Yong Shi",
+  "course": "CS 3305",
+  "source": "RMP",
+  "date": "May 13th, 2022",
+  "quality": 4.0,
+  "difficulty": 1.0,
+  "text": "Professor Shi grades very fairly, listens to student feedback, responds quickly to emails, and tries to ensure every student thoroughly understands the material. For that reason, he's an above average CS professor. However, given how easy CS3305 was, his slow and methodical teaching style made…"
+ },
+ {
+  "professor": "Yong Shi",
+  "course": "CS 3305",
+  "source": "RMP",
+  "date": "May 10th, 2022",
+  "quality": 1.0,
+  "difficulty": 2.0,
+  "text": "Unorganized reads from the slides only. His first few assignments had lots of mistakes. Hard to understand but overall nice guy. Just wish he cared more as I don't think he enjoys his job very much. We did the class in Java so it was extremely easy and the class was boring."
+ }
+]

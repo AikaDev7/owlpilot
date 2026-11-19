@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node10",
+    "customConditions": null,
+    "ignoreDeprecations": "6.0",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "noEmit": false,
+    "rootDir": "..",
+    "outDir": "../node_modules/.cache/scheduler-test"
+  },
+  "include": ["test-scheduler.ts"]
+}

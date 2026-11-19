@@ -14,7 +14,7 @@ export function formatTime(minutes: number, withSuffix = true): string {
   const m = minutes % 60;
   const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
   const suffix = h24 < 12 ? "AM" : "PM";
-  return `${h12}:${m === 0 ? "00" : m}${withSuffix ? " " + suffix : ""}`;
+  return `${h12}:${String(m).padStart(2, "0")}${withSuffix ? " " + suffix : ""}`;
 }
 
 // 7:00 AM to 10:00 PM in 30-minute steps

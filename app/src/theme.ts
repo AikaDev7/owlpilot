@@ -34,6 +34,7 @@ export const colors = {
   cardTitle: "#232323", // time card title when selected
   cardSubtext: "#494949", // time card small range
   cardSubtextSelected: "#383838",
+  warningBg: "#FDE3E3", // "Full, waitlist" badge background
   overlay: "rgba(0,0,0,0.4)", // dim background behind modals
 };
 
