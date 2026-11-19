@@ -10,10 +10,11 @@ type Props = {
   placeholder?: string;
   disabled?: boolean;
   error?: string; // red message under the box (also turns the border red)
+  label?: string; // small label inside the box above the value (like "Semester")
 };
 
 // Box that opens a list in a modal. Tap an option to pick it.
-export default function Dropdown({ options, value, onSelect, placeholder = "Select", disabled, error }: Props) {
+export default function Dropdown({ options, value, onSelect, placeholder = "Select", disabled, error, label }: Props) {
   const [open, setOpen] = useState(false);
 
   function handlePick(item: string) {
@@ -24,10 +25,13 @@ export default function Dropdown({ options, value, onSelect, placeholder = "Sele
   return (
     <View>
       <Pressable
-        style={[styles.box, !!error && styles.boxError, disabled && styles.boxDisabled]}
+        style={[styles.box, !!label && styles.boxLabeled, !!error && styles.boxError, disabled && styles.boxDisabled]}
         onPress={() => !disabled && setOpen(true)}
       >
-        <Text numberOfLines={1} style={[styles.value, value === null && styles.placeholder]}>{value ?? placeholder}</Text>
+        <View style={styles.valueColumn}>
+          {!!label && <Text style={styles.label}>{label}</Text>}
+          <Text numberOfLines={1} style={[styles.value, !!label && styles.valueLabeled, value === null && styles.placeholder]}>{value ?? placeholder}</Text>
+        </View>
         <Ionicons name="chevron-down" size={16} color={colors.textDark} />
       </Pressable>
       {!!error && <Text style={styles.error}>{error}</Text>}
@@ -65,6 +69,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
+  boxLabeled: { height: 67, alignItems: "flex-start", paddingTop: 8, paddingHorizontal: 8 },
+  valueColumn: { flex: 1, alignSelf: "stretch", justifyContent: "space-between" },
+  label: { fontFamily: fonts.body, fontSize: 10, lineHeight: 16, color: colors.labelGray },
+  valueLabeled: { fontFamily: fonts.bodyMedium, fontSize: 15, lineHeight: 24, paddingBottom: 8 },
   boxError: { borderColor: colors.error },
   boxDisabled: { opacity: 0.5 },
   value: { flex: 1, fontFamily: fonts.body, fontSize: 17, color: colors.textDark },

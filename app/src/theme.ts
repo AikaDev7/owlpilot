@@ -23,6 +23,9 @@ export const colors = {
   dropdownBorder: "#D7D7D7",
   courseChip: "#E6E6E6", // removable course chip background
   courseChipText: "#2D2D2D",
+  textMuted: "#5B5B5B", // subtitles in lists and "Options for You"
+  labelGray: "#313131", // small label inside the semester/campus boxes
+  divider: "#999999", // line between recommendation rows
   overlay: "rgba(0,0,0,0.4)", // dim background behind modals
 };
 

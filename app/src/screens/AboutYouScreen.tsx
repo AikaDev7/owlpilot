@@ -21,7 +21,7 @@ const YEARS = ["Freshman", "Sophomore", "Junior", "Senior"];
 const START_YEARS = [2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027];
 
 export default function AboutYouScreen({ navigation, route }: Props) {
-  const { setProfile } = useProfile();
+  const { profile, setProfile } = useProfile();
   const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
 
   const [major, setMajor] = useState<string | null>(route.params.major);
@@ -64,7 +64,7 @@ export default function AboutYouScreen({ navigation, route }: Props) {
       setShowErrors(true);
       return;
     }
-    setProfile({ major, year, startYear, gradYear, takenCourses: takenCodes });
+    setProfile({ ...profile, major, year, startYear, gradYear, takenCourses: takenCodes });
     navigation.navigate("SelectCourses");
   }
 

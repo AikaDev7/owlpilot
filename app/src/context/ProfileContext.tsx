@@ -7,9 +7,12 @@ export type Profile = {
   startYear: number | null;
   gradYear: number | null;
   takenCourses: string[]; // course codes, e.g. "CS 1301"
+  semester: string | null; // e.g. "Spring 2027" (set on Select Courses)
+  campus: string | null; // "Kennesaw" or "Marietta"
+  selectedCourses: string[]; // course codes picked for next term
 };
 
-const emptyProfile: Profile = { major: null, year: null, startYear: null, gradYear: null, takenCourses: [] };
+const emptyProfile: Profile = { major: null, year: null, startYear: null, gradYear: null, takenCourses: [], semester: null, campus: null, selectedCourses: [] };
 
 type ProfileContextValue = {
   profile: Profile;
