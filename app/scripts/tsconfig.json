@@ -11,5 +11,5 @@
     "rootDir": "..",
     "outDir": "../node_modules/.cache/scheduler-test"
   },
-  "include": ["test-scheduler.ts"]
+  "include": ["test-scheduler.ts", "demo-scenarios.ts"]
 }

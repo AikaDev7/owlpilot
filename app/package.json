@@ -32,6 +32,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
+    "demo:scenarios": "tsc -p scripts/tsconfig.json && node node_modules/.cache/scheduler-test/scripts/demo-scenarios.js",
     "test:scheduler": "tsc -p scripts/tsconfig.json && node node_modules/.cache/scheduler-test/scripts/test-scheduler.js"
   },
   "private": true
