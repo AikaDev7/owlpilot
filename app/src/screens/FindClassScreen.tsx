@@ -1,4 +1,4 @@
-import { buildingLabel } from "../data/sections";
+import { buildingFullName } from "../data/sections";
 import { useEffect, useRef, useState } from "react";
 import { FlatList, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
@@ -41,8 +41,7 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
   const { profile } = useProfile();
   const targetId = building && room ? `${building}-${room}` : "";
   const mapped = hasIndoorMap(building);
-  const shownBuilding = buildingLabel(building, buildingName ?? "");
-  const targetLabel = shownBuilding === building ? targetId : `${shownBuilding} · Room ${room}`; // codes like "0970" show the building name
+  const targetLabel = `${buildingFullName(building, buildingName || MAPPED_BUILDINGS[building] || "")} · Room ${room}`;
   const findBuilding = () => openBuildingInMaps(buildingName || MAPPED_BUILDINGS[building] || building);
 
   const [permission, requestPermission] = useCameraPermissions();
@@ -160,11 +159,9 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
 
   return (
     <SafeAreaView style={styles.safe}>
-      <Pressable style={styles.topCard} onLongPress={() => setDebug((d) => !d)} delayLongPress={600}>
-        <Pressable onPress={() => navigation.goBack()} hitSlop={10}>
-          <Text style={styles.back}>‹ Back</Text>
-        </Pressable>
-        <Text style={styles.topText}>{targetId ? `Going to ${targetLabel}${course ? ` · ${course}` : ""}` : "No class selected"}</Text>
+      <Pressable onPress={() => navigation.goBack()} hitSlop={10} style={styles.backRow}>
+        <Ionicons name="chevron-back" size={24} color={colors.textDark} />
+        <Text style={styles.back}>Back</Text>
       </Pressable>
 
       {!mapped ? (
@@ -178,8 +175,12 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
           </View>
         </View>
       ) : (
-      <>
-      <View style={styles.cameraBox}>
+      <ScrollView contentContainerStyle={styles.page}>
+      <View style={styles.yellowFrame}>
+      <Pressable onLongPress={() => setDebug((d) => !d)} delayLongPress={600}>
+        <Text style={styles.topText}>{targetId ? `Going to ${targetId}${course ? ` · ${course}` : ""}` : "No class selected"}</Text>
+      </Pressable>
+      <View style={[styles.cameraBox, { height: located ? 303 : 454 }]}>
         {cameraAllowed ? (
           <>
             <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing="back" />
@@ -217,21 +218,20 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
           </View>
         )}
       </View>
+      </View>
 
       <View style={styles.bottom}>
         {cameraAllowed && (
-          <PrimaryButton
-            title={reading ? "Reading sign…" : located ? "Scan again" : "Scan"}
-            onPress={scan}
-            variant={located ? "outline" : "yellow"}
-            fontSize={located ? 16 : undefined}
-          />
+          <Pressable onPress={scan} style={({ pressed }) => [styles.scanBtn, pressed && { opacity: 0.8 }]}>
+            <Ionicons name="scan-outline" size={18} color={colors.white} />
+            <Text style={styles.scanText}>{reading ? "Reading sign…" : located || result ? "Scan again" : "Scan"}</Text>
+          </Pressable>
         )}
-        <Pressable onPress={() => setPicking(true)} hitSlop={8}>
-          <Text style={styles.link}>Pick my location</Text>
+        <Pressable onPress={() => setPicking(true)} style={({ pressed }) => [styles.grayBtn, pressed && { opacity: 0.8 }]}>
+          <Text style={styles.grayText}>Pick my location</Text>
         </Pressable>
 
-        <ScrollView style={styles.results} contentContainerStyle={{ gap: 10 }}>
+        <View style={styles.results}>
           {result?.kind === "message" && <Text style={styles.message}>{result.text}</Text>}
           {result?.kind === "otherBuilding" && (
             <>
@@ -264,9 +264,9 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
               otherFloor={otherFloor(result.located)}
             />
           )}
-        </ScrollView>
+        </View>
       </View>
-      </>
+      </ScrollView>
       )}
 
       {toast && (
@@ -356,9 +356,9 @@ function LocatedView({ located, targetId, guide, stepIndex, metersLeft, otherFlo
               <Text style={styles.stepBig}>Arriving at {targetId}</Text>
               <Text style={styles.stepLeft}>{step.text}. Scan the door sign to confirm.</Text>
               {canScan ? (
-                <View style={{ alignSelf: "stretch", marginTop: 8 }}>
-                  <PrimaryButton title={scanning ? "Reading sign…" : "Scan"} onPress={onScan} />
-                </View>
+                <Pressable onPress={onScan} style={styles.stepBtn}>
+                  <Text style={styles.stepBtnText}>{scanning ? "Reading sign…" : "Scan"}</Text>
+                </Pressable>
               ) : (
                 <Text style={styles.stepSmall}>Camera is off. Use “Pick my location” and choose {targetId}.</Text>
               )}
@@ -368,7 +368,7 @@ function LocatedView({ located, targetId, guide, stepIndex, metersLeft, otherFlo
               <Text style={styles.stepBig}>Face down the hallway</Text>
               <Text style={styles.stepLeft}>Stand facing the way this step goes: {step.text}</Text>
               <View style={{ alignSelf: "stretch", marginTop: 8 }}>
-                <PrimaryButton title="Start" onPress={onStart} fontSize={18} />
+                <Pressable onPress={onStart} style={styles.stepBtn}><Text style={styles.stepBtnText}>Start</Text></Pressable>
               </View>
             </>
           ) : (
@@ -386,17 +386,17 @@ function LocatedView({ located, targetId, guide, stepIndex, metersLeft, otherFlo
                 </Text>
               ))}
               <View style={{ alignSelf: "stretch", marginTop: 8 }}>
-                <PrimaryButton
-                  title={step.kind === "stairs" ? `I’m on floor ${step.text.match(/floor (\d)/)?.[1] ?? ""}` : "Next step"}
-                  onPress={onNext}
-                  fontSize={18}
-                />
+                <Pressable onPress={onNext} style={styles.stepBtn}>
+                  <Text style={styles.stepBtnText}>
+                    {step.kind === "stairs" ? `I’m on floor ${step.text.match(/floor (\d)/)?.[1] ?? ""}` : "Next step"}
+                  </Text>
+                </Pressable>
               </View>
             </>
           )}
           {onRecalibrate && !last && (
-            <Pressable onPress={onRecalibrate} hitSlop={8}>
-              <Text style={styles.link}>Recalibrate</Text>
+            <Pressable onPress={onRecalibrate} style={({ pressed }) => [styles.grayBtn, pressed && { opacity: 0.8 }]}>
+              <Text style={styles.grayText}>Recalibrate</Text>
             </Pressable>
           )}
         </View>
@@ -407,42 +407,50 @@ function LocatedView({ located, targetId, guide, stepIndex, metersLeft, otherFlo
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.lightGray },
-  topCard: { backgroundColor: colors.yellow, marginHorizontal: 16, marginTop: 8, borderRadius: 12, padding: 14, ...shadow },
-  back: { fontFamily: fonts.bodyMedium, fontSize: 13, color: colors.black, marginBottom: 4 },
-  topText: { fontFamily: fonts.title, fontSize: 20, color: colors.black },
+  backRow: { flexDirection: "row", alignItems: "center", gap: 2, marginLeft: 16, marginTop: 4, paddingVertical: 10, alignSelf: "flex-start" },
+  back: { fontFamily: fonts.bodySemiBold, fontSize: 17, color: colors.textDark },
+  page: { paddingHorizontal: 16, paddingBottom: 24, gap: 16 },
+  yellowFrame: { backgroundColor: colors.yellow, borderRadius: 16, paddingHorizontal: 10, paddingTop: 8, paddingBottom: 10, gap: 8, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 7, elevation: 6 },
+  topText: { fontFamily: fonts.title, fontSize: 21, lineHeight: 32, color: colors.textDark, marginLeft: 6 },
 
-  cameraBox: { flex: 1, minHeight: 200, margin: 16, borderRadius: 16, overflow: "hidden", backgroundColor: colors.black },
-  frameWrap: { ...StyleSheet.absoluteFill, alignItems: "center", justifyContent: "center" },
-  frame: { width: "75%", height: "45%", borderWidth: 3, borderColor: colors.yellow, borderRadius: 16 },
-  frameHint: { fontFamily: fonts.bodyMedium, fontSize: 13, color: colors.white, marginTop: 10 },
+  cameraBox: { borderRadius: 13, overflow: "hidden", backgroundColor: colors.black },
+  frameWrap: { ...StyleSheet.absoluteFill, alignItems: "center" },
+  frame: { position: "absolute", top: 66, width: 294, height: 258, borderWidth: 4, borderColor: colors.yellow, borderRadius: 14 },
+  frameHint: { position: "absolute", top: 330, fontFamily: fonts.title, fontSize: 18, lineHeight: 24, color: colors.white },
+  scanBtn: { alignSelf: "stretch", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, backgroundColor: colors.black, borderRadius: 9, paddingVertical: 8, paddingHorizontal: 11, shadowColor: "#000", shadowOffset: { width: 1, height: 3 }, shadowOpacity: 0.25, shadowRadius: 3, elevation: 3 },
+  scanText: { fontFamily: fonts.bodySemiBold, fontSize: 17, lineHeight: 32, color: colors.white },
+  grayBtn: { alignSelf: "stretch", height: 40, alignItems: "center", justifyContent: "center", backgroundColor: "#E4E4E4", borderWidth: 1, borderColor: "#DADADA", borderRadius: 9, shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.25, shadowRadius: 1.5, elevation: 1 },
+  grayText: { fontFamily: fonts.bodySemiBold, fontSize: 14, color: colors.textDark },
+  stepBtn: { alignSelf: "stretch", alignItems: "center", justifyContent: "center", backgroundColor: colors.yellow, borderWidth: 1, borderColor: "#E1A80C", borderRadius: 6, paddingVertical: 2, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 2, elevation: 2 },
+  stepBtnText: { fontFamily: fonts.bodyMedium, fontSize: 20, lineHeight: 32, color: colors.textDark },
   noMap: { margin: 16, borderRadius: 16, padding: 20, backgroundColor: colors.cardGray, alignItems: "center" },
   noCamera: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24, backgroundColor: colors.cardGray },
   noCameraTitle: { fontFamily: fonts.title, fontSize: 20, color: colors.textDark },
   noCameraText: { fontFamily: fonts.body, fontSize: 14, color: colors.textMuted, textAlign: "center", marginTop: 6 },
 
-  bottom: { paddingHorizontal: 16, paddingBottom: 12, gap: 10, alignItems: "center", maxHeight: "48%" },
+  bottom: { gap: 16, alignSelf: "stretch" },
   link: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.textDark, textDecorationLine: "underline" },
-  results: { alignSelf: "stretch" },
+  results: { alignSelf: "stretch", gap: 16 },
   message: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.textDark, textAlign: "center" },
-  nearText: { fontFamily: fonts.title, fontSize: 18, color: colors.textDark },
-  stepCard: { alignSelf: "stretch", backgroundColor: colors.white, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: colors.cardBorder, alignItems: "center", gap: 4 },
-  stepBig: { fontFamily: fonts.title, fontSize: 26, color: colors.textDark, textAlign: "center" },
-  stepLeft: { fontFamily: fonts.bodySemiBold, fontSize: 15, color: colors.textDark },
-  progressText: { fontFamily: fonts.bodySemiBold, fontSize: 12, color: colors.textMuted },
-  progressTrack: { alignSelf: "stretch", height: 4, borderRadius: 2, backgroundColor: colors.cardBorder, overflow: "hidden", marginBottom: 6 },
+  nearText: { fontFamily: fonts.title, fontSize: 18, lineHeight: 24, color: colors.textDark },
+  stepCard: { alignSelf: "stretch", backgroundColor: colors.white, borderRadius: 9, padding: 16, borderWidth: 1, borderColor: "#C5C5C5", alignItems: "stretch", gap: 16 },
+  stepBig: { fontFamily: fonts.title, fontSize: 22, lineHeight: 27, color: "#2C2C2C" },
+  stepLeft: { fontFamily: fonts.title, fontSize: 16, lineHeight: 24, color: "#646464" },
+  progressText: { fontFamily: fonts.bodyMedium, fontSize: 12, lineHeight: 21, color: colors.textGray, textAlign: "center" },
+  progressTrack: { alignSelf: "stretch", height: 4, borderRadius: 2, backgroundColor: colors.cardBorder, overflow: "hidden" },
   progressFill: { height: 4, backgroundColor: colors.yellow },
   debug: { position: "absolute", top: 8, left: 8, backgroundColor: "rgba(0,0,0,0.7)", borderRadius: 8, padding: 8 },
   debugText: { fontFamily: fonts.bodyMedium, fontSize: 12, color: colors.white },
-  stepSmall: { fontFamily: fonts.body, fontSize: 13, color: colors.textMuted },
+  stepSmall: { fontFamily: fonts.bodyMedium, fontSize: 16, lineHeight: 26, color: "#2F2F2F" },
   toast: { position: "absolute", left: 16, right: 16, bottom: 24, backgroundColor: colors.black, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 16 },
   toastText: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.white, textAlign: "center" },
   step: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: colors.white, borderRadius: 10, padding: 10, borderWidth: 1, borderColor: colors.cardBorder },
   stepNumber: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.black, backgroundColor: colors.yellow, width: 24, height: 24, borderRadius: 12, textAlign: "center", lineHeight: 24, overflow: "hidden" },
   stepText: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.textDark, flex: 1 },
-  here: { backgroundColor: colors.successBg, borderColor: colors.successBorder, borderWidth: 1, borderRadius: 12, padding: 14 },
-  hereTitle: { fontFamily: fonts.title, fontSize: 22, color: colors.successText },
+  here: { backgroundColor: "#CEFFC9", borderColor: "#68B75F", borderWidth: 1, borderRadius: 8, paddingHorizontal: 16, paddingVertical: 8, gap: 6 },
+  hereTitle: { fontFamily: fonts.title, fontSize: 18, lineHeight: 24, color: "#03941E" },
   hereHint: { fontFamily: fonts.body, fontSize: 12, color: colors.successText, marginTop: 6 },
-  hereText: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.successText, marginTop: 2 },
+  hereText: { fontFamily: fonts.titleRegular, fontSize: 16, lineHeight: 24, color: "#03941E" },
 
   overlay: { flex: 1, backgroundColor: colors.overlay, justifyContent: "flex-end" },
   sheet: { backgroundColor: colors.white, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 16, maxHeight: "70%", gap: 10 },
