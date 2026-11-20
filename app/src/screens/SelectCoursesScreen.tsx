@@ -14,6 +14,7 @@ import SearchSelect from "../components/SearchSelect";
 import SectionTitle from "../components/SectionTitle";
 import SelectedCourseCard from "../components/SelectedCourseCard";
 import StepHeader from "../components/StepHeader";
+import { prereqWarning } from "../logic/prereqs";
 
 type Props = NativeStackScreenProps<RootStackParamList, "SelectCourses">;
 
@@ -106,6 +107,7 @@ export default function SelectCoursesScreen({ navigation }: Props) {
                 key={code}
                 code={code}
                 title={findCourse(code)?.title ?? ""}
+                warning={prereqWarning(code, profile.takenCourses)}
                 onRemove={() => setSelected(selected.filter((c) => c !== code))}
               />
             ))}

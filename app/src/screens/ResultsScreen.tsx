@@ -8,7 +8,8 @@ import CourseCard, { waitCapacity } from "../components/CourseCard";
 import PrimaryButton from "../components/PrimaryButton";
 import { CourseSwap, courseSwapIdeas, courseSwapLine } from "../logic/advisor";
 import { buildExplainRequest, explainKey } from "../logic/explain";
-import { buildSchedules, getNextSchedule, Schedule, ScheduleItem, SchedulerInput, Strategy, swapItem } from "../logic/scheduler";
+import { prereqWarning } from "../logic/prereqs";
+import { buildSchedules, getNextSchedule, mariettaOnlyCourses, Schedule, ScheduleItem, SchedulerInput, Strategy, swapItem } from "../logic/scheduler";
 import type { RootStackParamList } from "../navigation";
 import { colors, fonts, shadow } from "../theme";
 
@@ -22,7 +23,7 @@ function highRated(item: ScheduleItem) {
 function badgesFor(item: ScheduleItem, bestCode: string | null) {
   const badges: string[] = [];
   if (item.code === bestCode) badges.push("Best Match");
-  if (item.suggested) badges.push("Suggested");
+  if (item.suggested) badges.push(item.suggestedReason ? `Suggested · ${item.suggestedReason}` : "Suggested");
   if (item.waitlist) badges.push("Waitlist");
   if (item.tags.includes("outsidePreferredTime")) badges.push("Outside your preferred time");
   if (item.tags.includes("noRatings")) badges.push("No ratings");
@@ -68,13 +69,15 @@ export default function ResultsScreen({ navigation }: Props) {
   const input: SchedulerInput | null = profile.preferences ? { ...profile, preferences: profile.preferences } : null;
 
   // Schedules shown as tabs. Starts with the top 3; "+ Find another" adds more. Swaps edit one entry.
-  const initial = useMemo(() => (input ? buildSchedules(input) : null), [profile.aiRules]); // eslint-disable-line react-hooks/exhaustive-deps
+  const initial = useMemo(() => (input ? buildSchedules(input) : null), [profile.aiRules, profile.campus]); // eslint-disable-line react-hooks/exhaustive-deps
   const [schedules, setSchedules] = useState<Schedule[]>(initial?.schedules ?? []);
   const [lastRules, setLastRules] = useState(profile.aiRules);
+  const [lastCampus, setLastCampus] = useState(profile.campus);
 
   // "Try again" gave new AI rules, so start over with the new schedules
-  if (lastRules !== profile.aiRules) {
+  if (lastRules !== profile.aiRules || lastCampus !== profile.campus) {
     setLastRules(profile.aiRules);
+    setLastCampus(profile.campus);
     setSchedules(initial?.schedules ?? []);
     setSelected(0);
     setNoMore(false);
@@ -200,6 +203,11 @@ export default function ResultsScreen({ navigation }: Props) {
     () => (input && schedule ? courseSwapIdeas({ ...input, preferences: { ...input.preferences, numOnline: onlineLimit } }, schedule) : []),
     [schedule, onlineLimit], // eslint-disable-line react-hooks/exhaustive-deps
   );
+  // Selected courses missing because they are not offered on the chosen campus: offer Marietta (where most CS and AI classes meet)
+  const wantedCourses = input?.preferences.numCourses ?? 0;
+  const bestCount = Math.max(0, ...schedules.map((s) => s.items.length));
+  const campusFix = input && bestCount < wantedCourses && mariettaOnlyCourses(input).length > 0;
+  const missingCourses = !!schedule && schedule.items.length < wantedCourses;
   const alternatives = schedule ? schedule.items.map((item, index) => ({ item, index })).filter((x) => x.item.alternative) : [];
 
   return (
@@ -241,6 +249,15 @@ export default function ResultsScreen({ navigation }: Props) {
           )}
         </View>
 
+        {campusFix && (
+          <View style={styles.campusBanner}>
+            <Text style={styles.campusText}>Most CS and AI classes meet on the Marietta campus.</Text>
+            <Pressable onPress={() => setProfile({ ...profile, campus: "Marietta" })} style={styles.choose}>
+              <Text style={styles.chooseText}>Switch to Marietta</Text>
+            </Pressable>
+          </View>
+        )}
+
         {schedules.length === 0 || !schedule ? (
           <View style={styles.emptyBox}>
             {(initial?.notes ?? ["No schedule fits your rules."]).map((note, i) => (
@@ -264,7 +281,8 @@ export default function ResultsScreen({ navigation }: Props) {
               <Text style={styles.highlightLabel}>{tabLabel(schedule, selected)}: </Text>
               {schedule.highlight}
             </Text>
-            {schedule.badges.length > 0 && (
+            {missingCourses && <Text style={styles.waitLine}>Only {schedule.items.length} of {wantedCourses} courses fit</Text>}
+            {!missingCourses && schedule.badges.length > 0 && (
               <View style={styles.tabBadges}>
                 {schedule.badges.map((b) => (
                   <View key={b} style={styles.tabBadge}>
@@ -287,7 +305,7 @@ export default function ResultsScreen({ navigation }: Props) {
             </View>
 
             {schedule.items.map((item) => (
-              <CourseCard key={item.code} item={item} badges={badgesFor(item, bestCode)} expandable waitlistNote summary={summaryFor(item.professor)} summaryLoading={explainLoading} />
+              <CourseCard key={item.code} item={item} badges={badgesFor(item, bestCode)} warning={prereqWarning(item.code, profile.takenCourses)} expandable waitlistNote summary={summaryFor(item.professor)} summaryLoading={explainLoading} />
             ))}
             {initial?.notes
               .filter((note) => !schedule.items.some((i) => note.startsWith(`${i.code}:`)))
@@ -414,5 +432,7 @@ const styles = StyleSheet.create({
   altSummary: { fontFamily: fonts.body, fontSize: 12, lineHeight: 18, color: colors.textGray, marginBottom: 8 },
   choose: { backgroundColor: colors.white, borderWidth: 1, borderColor: colors.cardDivider, borderRadius: 17, paddingVertical: 5, alignItems: "center", marginBottom: 8, ...shadow, shadowOpacity: 0.15 },
   chooseText: { fontFamily: fonts.titleRegular, fontSize: 14, lineHeight: 24, color: colors.dropdownText },
+  campusBanner: { backgroundColor: colors.amberBg, borderColor: colors.amberBorder, borderWidth: 1, borderRadius: 12, padding: 14, marginBottom: 16 },
+  campusText: { fontFamily: fonts.bodySemiBold, fontSize: 13, lineHeight: 19, color: colors.amberText, marginBottom: 10 },
   buttons: { gap: 16, marginTop: 8, paddingHorizontal: 25 },
 });

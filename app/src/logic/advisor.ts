@@ -1,14 +1,12 @@
 // "Mini academic advisor" for one semester (plain code, no AI): ideas to swap a course in the schedule for
 // another course of the degree plan whose professor is rated clearly higher. Both courses count toward the degree,
 // so the student can take one now and the other next semester. Uses data/degreePlan.json (not sections.json in full).
-import degreePlan from "../data/degreePlan.json";
 import { findCourse } from "../data/courses";
+import { group, hasAny, planCourseOf, planCourses, prerequisitesMet } from "./prereqs";
 import { allItems, blocksConflict, fitsPreferences, makeContext, normCode, NO_RATING_SCORE, Schedule, ScheduleItem, SchedulerInput } from "./scheduler";
 
 const MIN_COURSE_SWAP_GAIN = 1.0; // the new professor must be rated this much higher than the replaced one
 const MAX_COURSE_SWAPS = 2;
-
-type PlanCourse = { code: string; title: string; prerequisites: (string | string[])[] }; // inner array = OR
 
 export type CourseSwap = {
   index: number; // position of the replaced course in schedule.items
@@ -16,26 +14,6 @@ export type CourseSwap = {
   item: ScheduleItem; // the new course (open section)
   gain: number; // rating difference
 };
-
-const planCourses = degreePlan.courses as PlanCourse[];
-
-// Codes that count as the same course ("CSE 2300" = "MATH 2345", "AI 3642" = "CS 3642")
-const sameAs = new Map<string, Set<string>>();
-for (const [code, others] of Object.entries(degreePlan.equivalents as Record<string, string[]>)) {
-  const group = new Set([code, ...others]);
-  for (const c of group) sameAs.set(c, group);
-}
-const group = (code: string) => sameAs.get(code) ?? new Set([code]);
-const hasAny = (codes: Set<string>, code: string) => [...group(code)].some((c) => codes.has(c));
-
-function planCourseOf(code: string) {
-  return planCourses.find((c) => group(c.code).has(code));
-}
-
-// Every prerequisite is taken (an inner array means any one of them)
-function prerequisitesMet(course: PlanCourse, taken: Set<string>) {
-  return course.prerequisites.every((p) => (Array.isArray(p) ? p.some((x) => hasAny(taken, normCode(x))) : hasAny(taken, normCode(p))));
-}
 
 // Is `code` a prerequisite of another course in the schedule?
 function neededByOther(code: string, schedule: Schedule, index: number) {

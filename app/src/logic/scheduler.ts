@@ -7,7 +7,7 @@
 import { AiRules, Preferences, Profile } from "../context/ProfileContext";
 import { Course, courses, findCourse } from "../data/courses";
 import { formatTime } from "../data/schedule";
-import { findProfessor, Section, sections } from "../data/sections";
+import { buildingLabel, findProfessor, Section, sections } from "../data/sections";
 import { getDegreePlan, hasOwnPlan } from "../mock/degreePlans";
 import { recommend } from "./recommend";
 
@@ -115,6 +115,7 @@ function toMinutes(hhmm: string) {
   return h * 60 + m;
 }
 
+const MAJOR_PREFIXES = ["CS", "CSE", "MATH", "STAT", "TCOM", "AI"];
 const ONLINE_CAMPUSES = ["KSU Online", "eCore"];
 const ONLINE_MODES = ["Fully at a Distance", "Predominately at a Distance"];
 function isOnline(s: Section) {
@@ -641,6 +642,14 @@ function solve(input: SchedulerInput): Solved {
     }
   }
 
+  // A course with no section (open or full) on the picked days: say which days it does meet
+  for (const course of selected) {
+    const all = allItems(course, ctx);
+    if (all.length === 0 || all.some((i) => i.blocks.every((b) => ctx.prefs.days.length === 0 || ctx.prefs.days.includes(b.day)))) continue;
+    const patterns = [...new Set(all.map((i) => DAY_ORDER.filter((d) => i.blocks.some((b) => b.day === d)).join("/")))];
+    notes.push(`${course.code} only meets ${patterns.join(" or ")}${input.campus ? ` on ${input.campus} campus` : ""}.`);
+  }
+
   for (const cap of [MAX_OPTIONS_PER_COURSE, WIDER_OPTIONS_PER_COURSE]) {
     const required: Entry[] = selected
       .map((c) => ({ code: c.code, suggested: false, ...buildOptions(c, ctx, cap) }))
@@ -675,6 +684,23 @@ function solve(input: SchedulerInput): Solved {
 
   notes.push("No schedule fits all your rules. Try fewer busy times or more campuses/days.");
   return { found: [], ctx, selected, notes };
+}
+
+const DAY_ORDER = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+// Selected courses that have no section on the chosen campus (or online) but do on Marietta, where most CS and AI
+// classes meet. Empty when the campus is already Marietta or switching would not help.
+export function mariettaOnlyCourses(input: SchedulerInput): string[] {
+  if (!input.campus || input.campus === "Marietta") return [];
+  const here = makeContext(input);
+  const marietta = makeContext({ ...input, campus: "Marietta" });
+  const taken = new Set(input.takenCourses.map(normCode));
+  return input.selectedCourses
+    .map(normCode)
+    .filter((code) => !taken.has(code) && sectionsByCourse.has(code))
+    .map((code) => ({ code, title: findCourse(code)?.title ?? code }))
+    .filter((c) => allItems(c, here).length === 0 && allItems(c, marietta).length > 0)
+    .map((c) => c.code);
 }
 
 export function buildSchedules(input: SchedulerInput): SchedulerResult {
@@ -724,7 +750,8 @@ function suggestedEntries(input: SchedulerInput, ctx: Context, selectedCodes: st
 
   const plan = getDegreePlan(input.major);
   const planCourses = recommend(input, selectedCodes, 100).map((r) => r.course);
-  const planReason = hasOwnPlan(input.major) ? `Required for ${input.major}` : "Required core course";
+  // Major courses (CS, CSE, MATH, ...) are "Required for <major>"; general courses (ENGL, HIST, ...) are "Core requirement"
+  const planReason = (c: Course) => (hasOwnPlan(input.major) && MAJOR_PREFIXES.includes(c.code.split(" ")[0]) ? `Required for ${input.major}` : "Core requirement");
 
   if (ctx.interests.length > 0) {
     for (const c of courses) {
@@ -733,10 +760,10 @@ function suggestedEntries(input: SchedulerInput, ctx: Context, selectedCodes: st
       }
     }
   }
-  for (const c of planCourses) if (fitLevels.includes(c.level)) add(c, planReason);
+  for (const c of planCourses) if (fitLevels.includes(c.level)) add(c, planReason(c));
   // 1000-level core courses for juniors/seniors only come last (and are penalized in the score)
-  for (const c of planCourses) if (c.level !== 1000 || !(input.year === "Junior" || input.year === "Senior")) add(c, planReason);
-  for (const c of planCourses) add(c, planReason);
+  for (const c of planCourses) if (c.level !== 1000 || !(input.year === "Junior" || input.year === "Senior")) add(c, planReason(c));
+  for (const c of planCourses) add(c, planReason(c));
   return entries;
 }
 
@@ -745,7 +772,7 @@ function suggestedEntries(input: SchedulerInput, ctx: Context, selectedCodes: st
 function sectionLines(s: Section, prefix: string) {
   if (s.meetings.length === 0) return [`${prefix}Online, no set meeting times`];
   return s.meetings.map(
-    (m) => `${prefix}${m.days.join(", ")} ${formatTime(toMinutes(m.start))}–${formatTime(toMinutes(m.end))} · ${m.building} ${m.room}`,
+    (m) => `${prefix}${m.days.join(", ")} ${formatTime(toMinutes(m.start))}–${formatTime(toMinutes(m.end))} · ${buildingLabel(m.building, m.buildingName)} ${m.room}`,
   );
 }
 

@@ -52,3 +52,8 @@ for (const p of professors) professorByName.set(p.name, p);
 export function findProfessor(name: string): Professor | undefined {
   return professorByName.get(name);
 }
+
+// Building to show: the letter code ("Q") when it is a letter, otherwise the name (codes like "0970" mean nothing to students)
+export function buildingLabel(code: string, name: string) {
+  return /^[A-Za-z]+$/.test(code) || !name ? code : name;
+}

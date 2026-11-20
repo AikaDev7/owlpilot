@@ -14,6 +14,7 @@ type Props = {
   summaryLoading?: boolean; // show "Summarizing reviews…" while the AI works
   showRmp?: boolean; // always show the "View on RMP" link (for cards that can't be expanded)
   waitlistNote?: boolean; // for a waitlisted class in the schedule: show "You’ll be on the waitlist (2/10)…" under the time
+  warning?: string | null; // prerequisite warning, e.g. "AI 3642 requires CS 3305 first."
   extra?: string; // small line under the card, e.g. the reason an alternative was skipped
   children?: React.ReactNode; // e.g. the "Choose This Option" button
 };
@@ -36,7 +37,7 @@ function timeLines(item: ScheduleItem) {
 }
 
 // Diana's course card: code + title + badges, professor + rating, days/time, mode + place
-export default function CourseCard({ item, badges, variant = "white", expandable = false, summary = null, summaryLoading = false, waitlistNote = false, showRmp = false, extra, children }: Props) {
+export default function CourseCard({ item, badges, variant = "white", expandable = false, summary = null, summaryLoading = false, waitlistNote = false, showRmp = false, warning, extra, children }: Props) {
   const [open, setOpen] = useState(false);
   const prof = findProfessor(item.professor);
   const yellow = variant === "yellow";
@@ -90,6 +91,8 @@ export default function CourseCard({ item, badges, variant = "white", expandable
           <Text style={styles.ratingText}>{item.rating === null ? "No ratings yet" : `${item.rating.toFixed(1)}/5`}</Text>
         </View>
       </View>
+
+      {warning ? <Text style={styles.warning}>{warning}</Text> : null}
 
       {extra ? <Text style={styles.extra}>{extra}</Text> : null}
 
@@ -162,6 +165,7 @@ const styles = StyleSheet.create({
   place: { fontFamily: fonts.bodyMedium, fontSize: 11, lineHeight: 20, color: colors.labelGray, flex: 1 },
   rating: { flexDirection: "row", alignItems: "flex-start", gap: 4, marginLeft: 8 },
   ratingText: { fontFamily: fonts.bodySemiBold, fontSize: 13, lineHeight: 20, color: colors.textMuted },
+  warning: { fontFamily: fonts.bodySemiBold, fontSize: 12, lineHeight: 18, color: colors.amberText, marginBottom: 8 },
   extra: { fontFamily: fonts.bodyMedium, fontSize: 11, lineHeight: 16, color: colors.textMuted, marginBottom: 8 },
   details: { borderTopWidth: 1, borderTopColor: colors.cardDivider, paddingTop: 10, paddingBottom: 6, gap: 4 },
   detail: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.textGray },

@@ -1,3 +1,4 @@
+import { buildingLabel } from "../data/sections";
 import { useEffect, useRef, useState } from "react";
 import { FlatList, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
@@ -40,6 +41,8 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
   const { profile } = useProfile();
   const targetId = building && room ? `${building}-${room}` : "";
   const mapped = hasIndoorMap(building);
+  const shownBuilding = buildingLabel(building, buildingName ?? "");
+  const targetLabel = shownBuilding === building ? targetId : `${shownBuilding} · Room ${room}`; // codes like "0970" show the building name
   const findBuilding = () => openBuildingInMaps(buildingName || MAPPED_BUILDINGS[building] || building);
 
   const [permission, requestPermission] = useCameraPermissions();
@@ -161,7 +164,7 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
         <Pressable onPress={() => navigation.goBack()} hitSlop={10}>
           <Text style={styles.back}>‹ Back</Text>
         </Pressable>
-        <Text style={styles.topText}>{targetId ? `Going to ${targetId}${course ? ` · ${course}` : ""}` : "No class selected"}</Text>
+        <Text style={styles.topText}>{targetId ? `Going to ${targetLabel}${course ? ` · ${course}` : ""}` : "No class selected"}</Text>
       </Pressable>
 
       {!mapped ? (
