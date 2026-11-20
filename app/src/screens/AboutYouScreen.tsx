@@ -1,5 +1,6 @@
 import { ComponentRef, useRef, useState } from "react";
-import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation";
 import { colors, fonts } from "../theme";
@@ -84,7 +85,13 @@ export default function AboutYouScreen({ navigation, route }: Props) {
   return (
     <ScreenContainer scrollRef={scrollRef}>
       <View style={styles.content}>
-        <StepHeader step={1} onBack={() => navigation.goBack()} />
+        {edit ? (
+          <Pressable onPress={() => navigation.goBack()} hitSlop={12} style={{ alignSelf: "flex-start" }}>
+            <Ionicons name="arrow-back" size={24} color={colors.black} />
+          </Pressable>
+        ) : (
+          <StepHeader step={1} onBack={() => navigation.goBack()} />
+        )}
 
         <Text style={styles.title}>Tell Us About Yourself</Text>
         <Text style={styles.subtitle}>Let’s personalize your academic journey</Text>

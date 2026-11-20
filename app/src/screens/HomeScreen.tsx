@@ -8,7 +8,6 @@ import { RootStackParamList } from "../navigation";
 import { formatTime } from "../data/schedule";
 import { getNow, WEEKDAYS } from "../logic/demoClock";
 import { FULL_DAY_NAMES, HomeClass, homeClasses, nextClass } from "../logic/homeClasses";
-import { hasIndoorMap } from "../logic/indoorRoute";
 import { openBuildingInMaps } from "../logic/maps";
 import { colors, fonts, shadow } from "../theme";
 
@@ -31,7 +30,7 @@ export default function HomeScreen({ navigation }: NativeStackScreenProps<RootSt
   const next = nextClass(inPerson, now);
 
   function findClass(c: HomeClass) {
-    navigation.navigate("FindClass", { building: c.building, room: c.room, course: c.course, buildingName: c.buildingName });
+    navigation.navigate("Destination", { building: c.building, room: c.room, course: c.course, buildingName: c.buildingName });
   }
 
   // "In 15 min", "In 1 h 5 min" or the day name when it is not today
@@ -79,12 +78,10 @@ export default function HomeScreen({ navigation }: NativeStackScreenProps<RootSt
                     <Text style={styles.findButtonText}>Find the Building</Text>
                     <Ionicons name="arrow-forward" size={20} color={colors.white} />
                   </Pressable>
-                  {hasIndoorMap(next.building) && (
-                    <Pressable onPress={() => findClass(next)} style={({ pressed }) => [styles.scanButton, { opacity: pressed ? 0.8 : 1 }]}>
-                      <Ionicons name="camera-outline" size={18} color={colors.black} />
-                      <Text style={styles.scanButtonText}>Find My Class</Text>
-                    </Pressable>
-                  )}
+                  <Pressable onPress={() => findClass(next)} style={({ pressed }) => [styles.scanButton, { opacity: pressed ? 0.8 : 1 }]}>
+                    <Ionicons name="camera-outline" size={18} color={colors.black} />
+                    <Text style={styles.scanButtonText}>Find My Class</Text>
+                  </Pressable>
                 </>
               ) : (
                 <Text style={styles.empty}>No in-person classes. Enjoy!</Text>
@@ -116,12 +113,10 @@ export default function HomeScreen({ navigation }: NativeStackScreenProps<RootSt
                           <Ionicons name="scan-outline" size={14} color={colors.black} />
                           <Text style={styles.smallButtonText}>Find the building</Text>
                         </Pressable>
-                        {hasIndoorMap(c.building) && (
-                          <Pressable onPress={() => findClass(c)} style={styles.smallButton}>
-                            <Ionicons name="camera-outline" size={14} color={colors.black} />
-                            <Text style={styles.smallButtonText}>Find class</Text>
-                          </Pressable>
-                        )}
+                        <Pressable onPress={() => findClass(c)} style={styles.smallButton}>
+                          <Ionicons name="camera-outline" size={14} color={colors.black} />
+                          <Text style={styles.smallButtonText}>Find class</Text>
+                        </Pressable>
                       </View>
                     </View>
                   </View>
