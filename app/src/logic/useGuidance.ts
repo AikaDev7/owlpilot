@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import * as Location from "expo-location";
 import { Pedometer } from "expo-sensors";
 
-export const METERS_PER_STEP = 0.75;
+export { METERS_PER_STEP_EST as METERS_PER_STEP } from "./indoorRoute";
 
 // Smoothed compass heading in degrees (0 = north), or null when not allowed / not available yet
 export function useHeading(enabled: boolean): number | null {

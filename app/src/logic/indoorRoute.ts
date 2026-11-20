@@ -69,12 +69,19 @@ function side(heading: Dir, next: Dir): "left" | "right" | null {
   return cross > 0 ? "right" : "left";
 }
 
-const roundTo5 = (m: number) => Math.max(5, Math.round(m / 5) * 5);
+const FEET_PER_METER = 3.28084;
+const roundTo5 = (ft: number) => Math.max(5, Math.round(ft / 5) * 5);
+
+// One walking step is about 0.75 m (2.5 ft)
+export const METERS_PER_STEP_EST = 0.75;
+export const stepsForMeters = (m: number) => Math.max(1, Math.round(m / METERS_PER_STEP_EST));
+export const feetToMeters = (ft: number) => ft / FEET_PER_METER;
 
 export type GuideStep = {
   text: string;
-  kind: "walk" | "turn" | "stairs" | "arrive";
+  kind: "walk" | "stairs" | "arrive"; // turns are merged into the next walk ("Turn right, then walk about 35 ft")
   meters: number; // walk steps: distance to cover
+  feet: number; // the same distance in feet (rounded to 5)
   dir: Dir | null; // map direction (x east, y south) this step points to; null for stairs
 };
 
@@ -121,7 +128,7 @@ function simplify(input: Seg[]): Seg[] {
   return segs;
 }
 
-// Steps like "Walk about 25 m down the hallway", "Turn left", "Take the stairs up to floor 2", "Q-207 is on your left".
+// Steps like "Walk about 65 ft down the hallway", "Turn left, then walk about 35 ft", "Take the stairs up to floor 2", "Q-207 is on your left".
 // Returns null when there is no route; an empty list when you are already there.
 export function routeGuide(fromId: string, toRoomId: string): GuideStep[] | null {
   if (!nodeById.has(fromId) || !nodeById.has(toRoomId)) return null;
@@ -135,7 +142,7 @@ export function routeGuide(fromId: string, toRoomId: string): GuideStep[] | null
     const a = nodeById.get(path[i])!;
     const b = nodeById.get(path[i + 1])!;
     if (a.floor !== b.floor) {
-      steps.push({ text: `Take the ${a.type === "elevator" ? "elevator" : "stairs"} ${b.floor > a.floor ? "up" : "down"} to floor ${b.floor}`, kind: "stairs", meters: 0, dir: null });
+      steps.push({ text: `Take the ${a.type === "elevator" ? "elevator" : "stairs"} ${b.floor > a.floor ? "up" : "down"} to floor ${b.floor}`, kind: "stairs", meters: 0, feet: 0, dir: null });
       heading = null; // after the stairs we face whatever way the exit points
       i++;
       continue;
@@ -157,18 +164,16 @@ export function routeGuide(fromId: string, toRoomId: string): GuideStep[] | null
     }
     let first = true;
     for (const seg of simplify(raw)) {
-      if (heading) {
-        const s = side(heading, seg.dir);
-        if (s) steps.push({ text: `Turn ${s}`, kind: "turn", meters: 0, dir: seg.dir });
-      }
+      const turn = heading ? side(heading, seg.dir) : null;
       heading = seg.dir;
-      const meters = roundTo5(seg.len);
-      steps.push({ text: `Walk about ${meters} m${first ? " down the hallway" : ""}`, kind: "walk", meters, dir: seg.dir });
+      const feet = roundTo5(seg.len * FEET_PER_METER);
+      const text = turn ? `Turn ${turn}, then walk about ${feet} ft` : `Walk about ${feet} ft${first ? " down the hallway" : ""}`;
+      steps.push({ text, kind: "walk", meters: feetToMeters(feet), feet, dir: seg.dir });
       first = false;
     }
     if (roomDir) {
       const s = heading ? side(heading, roomDir) : null;
-      steps.push({ text: s ? `${roomId} is on your ${s}` : `${roomId} is straight ahead`, kind: "arrive", meters: 0, dir: roomDir });
+      steps.push({ text: s ? `${roomId} is on your ${s}` : `${roomId} is straight ahead`, kind: "arrive", meters: 0, feet: 0, dir: roomDir });
     }
   }
   return steps;

@@ -10,7 +10,7 @@ import { RootStackParamList } from "../navigation";
 import { readSign, SignResult } from "../api";
 import FloorArrow from "../components/FloorArrow";
 import { Ionicons } from "@expo/vector-icons";
-import { findNode, GuideStep, hasIndoorMap, mapBearing, mapRooms, MapNode, MAPPED_BUILDINGS, northOffsetDeg, routeGuide } from "../logic/indoorRoute";
+import { findNode, GuideStep, hasIndoorMap, mapBearing, mapRooms, MapNode, MAPPED_BUILDINGS, routeGuide, stepsForMeters } from "../logic/indoorRoute";
 import { METERS_PER_STEP, useHeading, useStepCount } from "../logic/useGuidance";
 import { openBuildingInMaps } from "../logic/maps";
 import { startsText } from "../logic/classTiming";
@@ -19,9 +19,15 @@ import { colors, fonts, shadow } from "../theme";
 // Where the student is, found from a photo or picked by hand
 type Located = { nodeId: string; label: string };
 // What the result area shows
-type Result = { kind: "here"; confirm?: boolean } | { kind: "located"; located: Located } | { kind: "message"; text: string } | { kind: "otherBuilding"; text: string };
+type Result = { kind: "here" } | { kind: "located"; located: Located } | { kind: "message"; text: string } | { kind: "otherBuilding"; text: string };
 
 const MIN_CONFIDENCE = 0.4;
+
+// Angle in (-180, 180]
+function normalizeAngle(a: number): number {
+  const n = ((a % 360) + 360) % 360;
+  return n > 180 ? n - 360 : n;
+}
 
 function whereLabel(node: MapNode): string {
   if (node.type === "room") return `near ${node.id}`;
@@ -45,6 +51,8 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
   const [guide, setGuide] = useState<GuideStep[] | null>(null);
   const [stepIndex, setStepIndex] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
+  const [calibration, setCalibration] = useState<number | null>(null); // compass heading minus map bearing, set when the student faces down the hallway
+  const [debug, setDebug] = useState(false);
 
   const located = result?.kind === "located";
   const heading = useHeading(mapped && located);
@@ -62,11 +70,6 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
     if (!guide || !current || current.kind !== "walk" || totalSteps === null) return;
     if ((totalSteps - baseSteps.current) * METERS_PER_STEP >= current.meters && stepIndex < guide.length - 1) goToStep(stepIndex + 1);
   }, [totalSteps]);
-
-  // Reaching the last step means we arrived: show the green card by itself
-  useEffect(() => {
-    if (located && guide && stepIndex >= guide.length - 1) setResult({ kind: "here", confirm: true });
-  }, [located, guide, stepIndex]);
 
   function locate(nodeId: string, rescan = false) {
     const node = findNode(nodeId);
@@ -136,22 +139,30 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
 
   const cameraAllowed = permission?.granted === true;
   const askPermission = permission !== null && !permission.granted && permission.canAskAgain;
-  const showArrow = located && heading !== null && !!current?.dir && current.kind !== "stairs";
-  const arrowAngle = current?.dir && heading !== null ? mapBearing(current.dir) + northOffsetDeg - heading : 0;
+  // Arrow = step bearing - (heading - calibration). Map bearing is degrees clockwise from north (x east, y south),
+  // FloorArrow points up at 0 and a positive rotateZ turns it clockwise, so a positive angle means "turn right".
+  const stepBearing = current?.dir ? mapBearing(current.dir) : null;
+  const walking = located && current?.kind === "walk" && stepBearing !== null && heading !== null;
+  const needsCalibration = walking && calibration === null;
+  const showArrow = walking && calibration !== null;
+  const arrowAngle = stepBearing !== null && heading !== null && calibration !== null ? normalizeAngle(stepBearing - (heading - calibration)) : 0;
   const metersLeft =
-    current?.kind === "walk" && totalSteps !== null
-      ? Math.max(0, Math.round(current.meters - (totalSteps - baseSteps.current) * METERS_PER_STEP))
+    current?.kind === "walk"
+      ? Math.max(0, totalSteps !== null ? current.meters - (totalSteps - baseSteps.current) * METERS_PER_STEP : current.meters)
       : null;
+  const startCalibration = () => {
+    if (heading !== null && stepBearing !== null) setCalibration(normalizeAngle(heading - stepBearing));
+  };
   const startsLine = startsText(profile.acceptedSchedule, course);
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.topCard}>
+      <Pressable style={styles.topCard} onLongPress={() => setDebug((d) => !d)} delayLongPress={600}>
         <Pressable onPress={() => navigation.goBack()} hitSlop={10}>
           <Text style={styles.back}>‹ Back</Text>
         </Pressable>
         <Text style={styles.topText}>{targetId ? `Going to ${targetId}${course ? ` · ${course}` : ""}` : "No class selected"}</Text>
-      </View>
+      </Pressable>
 
       {!mapped ? (
         <View style={styles.noMap}>
@@ -194,6 +205,14 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
           </View>
         )}
         {showArrow && <FloorArrow angle={arrowAngle} />}
+        {debug && (
+          <View style={styles.debug} pointerEvents="none">
+            <Text style={styles.debugText}>heading {heading === null ? "–" : heading.toFixed(0)}°</Text>
+            <Text style={styles.debugText}>step bearing {stepBearing === null ? "–" : stepBearing.toFixed(0)}°</Text>
+            <Text style={styles.debugText}>calibration {calibration === null ? "–" : calibration.toFixed(0)}°</Text>
+            <Text style={styles.debugText}>arrow {arrowAngle.toFixed(0)}°</Text>
+          </View>
+        )}
       </View>
 
       <View style={styles.bottom}>
@@ -222,7 +241,6 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
               <Text style={styles.hereTitle}>You’re here!</Text>
               <Text style={styles.hereText}>{course ? `${course} · ${targetId}` : targetId}</Text>
               {startsLine && <Text style={styles.hereText}>{startsLine}</Text>}
-              {result.confirm && <Text style={styles.hereHint}>Scan the door sign to confirm</Text>}
             </View>
           )}
           {result?.kind === "located" && (
@@ -232,8 +250,13 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
               guide={guide}
               stepIndex={stepIndex}
               metersLeft={metersLeft}
+              needsCalibration={needsCalibration}
+              onStart={startCalibration}
+              onRecalibrate={calibration !== null ? () => setCalibration(null) : null}
+              canScan={cameraAllowed}
+              scanning={reading}
+              onScan={scan}
               onNext={() => goToStep(stepIndex + 1)}
-              onArrived={() => setResult({ kind: "here" })}
               onSwitch={(l) => locate(l.nodeId)}
               otherFloor={otherFloor(result.located)}
             />
@@ -291,14 +314,20 @@ type LocatedProps = {
   otherFloor: Located | null;
   onSwitch: (l: Located) => void;
   onNext: () => void;
-  onArrived: () => void;
+  needsCalibration: boolean;
+  onStart: () => void;
+  onRecalibrate: (() => void) | null;
+  canScan: boolean;
+  scanning: boolean;
+  onScan: () => void;
 };
 
-function LocatedView({ located, targetId, guide, stepIndex, metersLeft, otherFloor, onSwitch, onNext, onArrived }: LocatedProps) {
+function LocatedView({ located, targetId, guide, stepIndex, metersLeft, otherFloor, onSwitch, onNext, needsCalibration, onStart, onRecalibrate, canScan, scanning, onScan }: LocatedProps) {
   const node = findNode(located.nodeId)!;
   const step = guide?.[stepIndex];
   const last = guide ? stepIndex >= guide.length - 1 : true;
   const rest = guide ? guide.slice(stepIndex + 1) : [];
+  const total = guide?.length ?? 0;
   return (
     <>
       <Text style={styles.nearText}>
@@ -313,23 +342,60 @@ function LocatedView({ located, targetId, guide, stepIndex, metersLeft, otherFlo
         <Text style={styles.message}>{targetId ? `${targetId} isn’t on our map yet.` : "No class selected."}</Text>
       ) : (
         <View style={styles.stepCard}>
-          {step.kind === "stairs" && <Ionicons name="footsteps" size={36} color={colors.black} />}
-          <Text style={styles.stepBig}>{step.text}</Text>
-          {metersLeft !== null && step.kind === "walk" && <Text style={styles.stepLeft}>{metersLeft} m left</Text>}
-          {rest.map((s, i) => (
-            <Text key={i} style={styles.stepSmall}>
-              {i + stepIndex + 2}. {s.text}
-            </Text>
-          ))}
-          <View style={{ alignSelf: "stretch", marginTop: 8 }}>
-            {last ? (
-              <PrimaryButton title="I’ve arrived" onPress={onArrived} fontSize={18} />
-            ) : step.kind === "stairs" ? (
-              <PrimaryButton title={`I’m on floor ${step.text.match(/floor (\d)/)?.[1] ?? ""}`} onPress={onNext} fontSize={18} />
-            ) : (
-              <PrimaryButton title="Next step" onPress={onNext} fontSize={18} />
-            )}
+          <Text style={styles.progressText}>
+            Step {stepIndex + 1} of {total}
+          </Text>
+          <View style={styles.progressTrack}>
+            <View style={[styles.progressFill, { width: `${((stepIndex + 1) / total) * 100}%` }]} />
           </View>
+          {last ? (
+            <>
+              <Text style={styles.stepBig}>Arriving at {targetId}</Text>
+              <Text style={styles.stepLeft}>{step.text}. Scan the door sign to confirm.</Text>
+              {canScan ? (
+                <View style={{ alignSelf: "stretch", marginTop: 8 }}>
+                  <PrimaryButton title={scanning ? "Reading sign…" : "Scan"} onPress={onScan} />
+                </View>
+              ) : (
+                <Text style={styles.stepSmall}>Camera is off. Use “Pick my location” and choose {targetId}.</Text>
+              )}
+            </>
+          ) : needsCalibration ? (
+            <>
+              <Text style={styles.stepBig}>Face down the hallway</Text>
+              <Text style={styles.stepLeft}>Stand facing the way this step goes: {step.text}</Text>
+              <View style={{ alignSelf: "stretch", marginTop: 8 }}>
+                <PrimaryButton title="Start" onPress={onStart} fontSize={18} />
+              </View>
+            </>
+          ) : (
+            <>
+              {step.kind === "stairs" && <Ionicons name="footsteps" size={36} color={colors.black} />}
+              <Text style={styles.stepBig}>{step.text}</Text>
+              {step.kind === "walk" && metersLeft !== null && (
+                <Text style={styles.stepLeft}>
+                  About {Math.max(0, Math.round((metersLeft * 3.28084) / 5) * 5)} ft (~{stepsForMeters(metersLeft)} steps)
+                </Text>
+              )}
+              {rest.slice(0, -1).map((s, i) => (
+                <Text key={i} style={styles.stepSmall}>
+                  {i + stepIndex + 2}. {s.text}
+                </Text>
+              ))}
+              <View style={{ alignSelf: "stretch", marginTop: 8 }}>
+                <PrimaryButton
+                  title={step.kind === "stairs" ? `I’m on floor ${step.text.match(/floor (\d)/)?.[1] ?? ""}` : "Next step"}
+                  onPress={onNext}
+                  fontSize={18}
+                />
+              </View>
+            </>
+          )}
+          {onRecalibrate && !last && (
+            <Pressable onPress={onRecalibrate} hitSlop={8}>
+              <Text style={styles.link}>Recalibrate</Text>
+            </Pressable>
+          )}
         </View>
       )}
     </>
@@ -359,6 +425,11 @@ const styles = StyleSheet.create({
   stepCard: { alignSelf: "stretch", backgroundColor: colors.white, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: colors.cardBorder, alignItems: "center", gap: 4 },
   stepBig: { fontFamily: fonts.title, fontSize: 26, color: colors.textDark, textAlign: "center" },
   stepLeft: { fontFamily: fonts.bodySemiBold, fontSize: 15, color: colors.textDark },
+  progressText: { fontFamily: fonts.bodySemiBold, fontSize: 12, color: colors.textMuted },
+  progressTrack: { alignSelf: "stretch", height: 4, borderRadius: 2, backgroundColor: colors.cardBorder, overflow: "hidden", marginBottom: 6 },
+  progressFill: { height: 4, backgroundColor: colors.yellow },
+  debug: { position: "absolute", top: 8, left: 8, backgroundColor: "rgba(0,0,0,0.7)", borderRadius: 8, padding: 8 },
+  debugText: { fontFamily: fonts.bodyMedium, fontSize: 12, color: colors.white },
   stepSmall: { fontFamily: fonts.body, fontSize: 13, color: colors.textMuted },
   toast: { position: "absolute", left: 16, right: 16, bottom: 24, backgroundColor: colors.black, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 16 },
   toastText: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.white, textAlign: "center" },
