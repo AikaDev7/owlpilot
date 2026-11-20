@@ -1,4 +1,5 @@
 {
+ "northOffsetDeg": 0,
  "_DEMO": "DEMO DATA, not the real building. Replace with the real layout from the Q building evacuation plans. x = meters east, y = meters south. Edge weights are computed from the coordinates (stairs/elevator floor links are in indoorRoute.ts).",
  "nodes": [
   { "id": "h1-0", "type": "hall", "floor": 1, "x": 0, "y": 0 },

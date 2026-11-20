@@ -71,18 +71,33 @@ function side(heading: Dir, next: Dir): "left" | "right" | null {
 
 const roundTo5 = (m: number) => Math.max(5, Math.round(m / 5) * 5);
 
+export type GuideStep = {
+  text: string;
+  kind: "walk" | "turn" | "stairs" | "arrive";
+  meters: number; // walk steps: distance to cover
+  dir: Dir | null; // map direction (x east, y south) this step points to; null for stairs
+};
+
+// Compass bearing (degrees clockwise from north) of a map direction, before adding the building's north offset
+export function mapBearing(dir: Dir): number {
+  return (Math.atan2(dir.x, -dir.y) * 180) / Math.PI;
+}
+
+// Angle between real north and the map's +y axis (set from the evacuation plan later)
+export const northOffsetDeg: number = (buildingJson as { northOffsetDeg?: number }).northOffsetDeg ?? 0;
+
 // Steps like "Walk about 20 m", "Turn left", "Take the stairs up to floor 2", "Q-207 is on your right".
 // Returns null when there is no route; an empty list when you are already there.
-export function routeSteps(fromId: string, toRoomId: string): string[] | null {
+export function routeGuide(fromId: string, toRoomId: string): GuideStep[] | null {
   if (!nodeById.has(fromId) || !nodeById.has(toRoomId)) return null;
   const path = shortestPath(fromId, toRoomId);
   if (!path) return null;
-  const steps: string[] = [];
+  const steps: GuideStep[] = [];
   let heading: Dir | null = null; // direction we are facing
   let walked = 0; // meters walked in the current direction
   let onNewFloor = false; // just left the stairs/elevator: no "head into the hallway" step
   const flush = () => {
-    if (walked >= 4) steps.push(`Walk about ${roundTo5(walked)} m`);
+    if (walked >= 4) steps.push({ text: `Walk about ${roundTo5(walked)} m`, kind: "walk", meters: roundTo5(walked), dir: heading });
     walked = 0;
   };
 
@@ -91,7 +106,7 @@ export function routeSteps(fromId: string, toRoomId: string): string[] | null {
     const b = nodeById.get(path[i + 1])!;
     if (a.floor !== b.floor) {
       flush();
-      steps.push(`Take the ${a.type === "elevator" ? "elevator" : "stairs"} ${b.floor > a.floor ? "up" : "down"} to floor ${b.floor}`);
+      steps.push({ text: `Take the ${a.type === "elevator" ? "elevator" : "stairs"} ${b.floor > a.floor ? "up" : "down"} to floor ${b.floor}`, kind: "stairs", meters: 0, dir: null });
       heading = null; // after the stairs we face whatever way the exit points
       onNewFloor = true;
       continue;
@@ -103,17 +118,17 @@ export function routeSteps(fromId: string, toRoomId: string): string[] | null {
     if (intoRoom) {
       flush();
       const s = heading ? side(heading, dir) : null;
-      steps.push(s ? `${b.id} is on your ${s}` : `${b.id} is straight ahead`);
+      steps.push({ text: s ? `${b.id} is on your ${s}` : `${b.id} is straight ahead`, kind: "arrive", meters: 0, dir });
       break;
     }
     if (heading === null) {
-      if (a.type !== "hall" && !onNewFloor) steps.push("Head into the main hallway");
+      if (a.type !== "hall" && !onNewFloor) steps.push({ text: "Head into the main hallway", kind: "turn", meters: 0, dir });
       heading = dir;
     } else {
       const s = side(heading, dir);
       if (s) {
         flush();
-        steps.push(`Turn ${s}`);
+        steps.push({ text: `Turn ${s}`, kind: "turn", meters: 0, dir });
         heading = dir;
       }
     }
@@ -121,4 +136,8 @@ export function routeSteps(fromId: string, toRoomId: string): string[] | null {
   }
   flush();
   return steps;
+}
+
+export function routeSteps(fromId: string, toRoomId: string): string[] | null {
+  return routeGuide(fromId, toRoomId)?.map((s) => s.text) ?? null;
 }

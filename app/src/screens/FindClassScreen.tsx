@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FlatList, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImageManipulator from "expo-image-manipulator";
@@ -8,7 +8,10 @@ import PrimaryButton from "../components/PrimaryButton";
 import { useProfile } from "../context/ProfileContext";
 import { RootStackParamList } from "../navigation";
 import { readSign, SignResult } from "../api";
-import { findNode, hasIndoorMap, mapRooms, MapNode, MAPPED_BUILDINGS, routeSteps } from "../logic/indoorRoute";
+import FloorArrow from "../components/FloorArrow";
+import { Ionicons } from "@expo/vector-icons";
+import { findNode, GuideStep, hasIndoorMap, mapBearing, mapRooms, MapNode, MAPPED_BUILDINGS, northOffsetDeg, routeGuide } from "../logic/indoorRoute";
+import { METERS_PER_STEP, useHeading, useStepCount } from "../logic/useGuidance";
 import { openBuildingInMaps } from "../logic/maps";
 import { startsText } from "../logic/classTiming";
 import { colors, fonts, shadow } from "../theme";
@@ -38,12 +41,42 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
   const [result, setResult] = useState<Result | null>(null);
   const [lastFloor, setLastFloor] = useState(1); // floor of the last room we saw, used when only stairs/elevator are seen
   const [picking, setPicking] = useState(false);
+  const [guide, setGuide] = useState<GuideStep[] | null>(null);
+  const [stepIndex, setStepIndex] = useState(0);
+  const [toast, setToast] = useState<string | null>(null);
 
-  function locate(nodeId: string) {
+  const located = result?.kind === "located";
+  const heading = useHeading(mapped && located);
+  const totalSteps = useStepCount(mapped && located);
+  const baseSteps = useRef(0); // pedometer total when the current step began
+
+  function goToStep(i: number) {
+    baseSteps.current = totalSteps ?? 0;
+    setStepIndex(i);
+  }
+
+  // Walk steps advance by themselves once enough steps were counted
+  const current = guide?.[stepIndex];
+  useEffect(() => {
+    if (!guide || !current || current.kind !== "walk" || totalSteps === null) return;
+    if ((totalSteps - baseSteps.current) * METERS_PER_STEP >= current.meters && stepIndex < guide.length - 1) goToStep(stepIndex + 1);
+  }, [totalSteps]);
+
+  function locate(nodeId: string, rescan = false) {
     const node = findNode(nodeId);
     if (!node) return setResult({ kind: "message", text: `${nodeId} isn’t on our map yet.` });
     setLastFloor(node.floor);
-    if (node.id === targetId) return setResult({ kind: "here" });
+    if (node.id === targetId) {
+      setGuide(null);
+      return setResult({ kind: "here" });
+    }
+    setGuide(targetId ? routeGuide(nodeId, targetId) : null);
+    baseSteps.current = totalSteps ?? 0;
+    setStepIndex(0);
+    if (rescan && result?.kind === "located") {
+      setToast("Route updated");
+      setTimeout(() => setToast(null), 2000);
+    }
     setResult({ kind: "located", located: { nodeId, label: whereLabel(node) } });
   }
 
@@ -56,10 +89,10 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
       if (scannedBuilding !== building) {
         return setResult({ kind: "otherBuilding", text: `That’s Building ${scannedBuilding}. Your class is in Building ${building}.` });
       }
-      return locate(sign.room);
+      return locate(sign.room, true);
     }
-    if (sign.landmark === "entrance") return locate("entrance-1");
-    if (sign.landmark === "stairs" || sign.landmark === "elevator") return locate(`${sign.landmark}-${lastFloor}`);
+    if (sign.landmark === "entrance") return locate("entrance-1", true);
+    if (sign.landmark === "stairs" || sign.landmark === "elevator") return locate(`${sign.landmark}-${lastFloor}`, true);
     setResult({ kind: "message", text: "We can’t place that sign on our map yet." });
   }
 
@@ -67,7 +100,6 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
   async function scan() {
     if (reading || !cameraRef.current) return;
     setReading(true);
-    setResult(null);
     try {
       const photo = await cameraRef.current.takePictureAsync({ quality: 0.7, skipProcessing: true });
       const small = await ImageManipulator.manipulateAsync(photo.uri, [{ resize: { width: 768 } }], {
@@ -98,6 +130,8 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
 
   const cameraAllowed = permission?.granted === true;
   const askPermission = permission !== null && !permission.granted && permission.canAskAgain;
+  const showArrow = located && heading !== null && !!current?.dir && current.kind !== "stairs";
+  const arrowAngle = current?.dir && heading !== null ? mapBearing(current.dir) + northOffsetDeg - heading : 0;
   const startsLine = startsText(profile.acceptedSchedule, course);
 
   return (
@@ -147,10 +181,18 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
             )}
           </View>
         )}
+        {showArrow && <FloorArrow angle={arrowAngle} />}
       </View>
 
       <View style={styles.bottom}>
-        {cameraAllowed && <PrimaryButton title={reading ? "Reading sign…" : "Scan"} onPress={scan} />}
+        {cameraAllowed && (
+          <PrimaryButton
+            title={reading ? "Reading sign…" : located ? "Scan again" : "Scan"}
+            onPress={scan}
+            variant={located ? "outline" : "yellow"}
+            fontSize={located ? 16 : undefined}
+          />
+        )}
         <Pressable onPress={() => setPicking(true)} hitSlop={8}>
           <Text style={styles.link}>Pick my location</Text>
         </Pressable>
@@ -170,10 +212,27 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
               {startsLine && <Text style={styles.hereText}>{startsLine}</Text>}
             </View>
           )}
-          {result?.kind === "located" && <LocatedView located={result.located} targetId={targetId} onSwitch={(l) => locate(l.nodeId)} otherFloor={otherFloor(result.located)} />}
+          {result?.kind === "located" && (
+            <LocatedView
+              located={result.located}
+              targetId={targetId}
+              guide={guide}
+              stepIndex={stepIndex}
+              onNext={() => goToStep(stepIndex + 1)}
+              onArrived={() => setResult({ kind: "here" })}
+              onSwitch={(l) => locate(l.nodeId)}
+              otherFloor={otherFloor(result.located)}
+            />
+          )}
         </ScrollView>
       </View>
       </>
+      )}
+
+      {toast && (
+        <View style={styles.toast} pointerEvents="none">
+          <Text style={styles.toastText}>{toast}</Text>
+        </View>
       )}
 
       <Modal visible={picking} animationType="slide" transparent onRequestClose={() => setPicking(false)}>
@@ -209,9 +268,22 @@ function locationChoices(): { id: string; label: string }[] {
   return [...landmarks, ...rooms];
 }
 
-function LocatedView({ located, targetId, otherFloor, onSwitch }: { located: Located; targetId: string; otherFloor: Located | null; onSwitch: (l: Located) => void }) {
+type LocatedProps = {
+  located: Located;
+  targetId: string;
+  guide: GuideStep[] | null;
+  stepIndex: number;
+  otherFloor: Located | null;
+  onSwitch: (l: Located) => void;
+  onNext: () => void;
+  onArrived: () => void;
+};
+
+function LocatedView({ located, targetId, guide, stepIndex, otherFloor, onSwitch, onNext, onArrived }: LocatedProps) {
   const node = findNode(located.nodeId)!;
-  const steps = targetId ? routeSteps(located.nodeId, targetId) : null;
+  const step = guide?.[stepIndex];
+  const last = guide ? stepIndex >= guide.length - 1 : true;
+  const rest = guide ? guide.slice(stepIndex + 1) : [];
   return (
     <>
       <Text style={styles.nearText}>
@@ -222,15 +294,27 @@ function LocatedView({ located, targetId, otherFloor, onSwitch }: { located: Loc
           <Text style={styles.link}>Not floor {node.floor}? Switch to floor {findNode(otherFloor.nodeId)!.floor}</Text>
         </Pressable>
       )}
-      {steps === null ? (
+      {guide === null || !step ? (
         <Text style={styles.message}>{targetId ? `${targetId} isn’t on our map yet.` : "No class selected."}</Text>
       ) : (
-        steps.map((s, i) => (
-          <View key={i} style={styles.step}>
-            <Text style={styles.stepNumber}>{i + 1}</Text>
-            <Text style={styles.stepText}>{s}</Text>
+        <View style={styles.stepCard}>
+          {step.kind === "stairs" && <Ionicons name="footsteps" size={36} color={colors.black} />}
+          <Text style={styles.stepBig}>{step.text}</Text>
+          {rest.map((s, i) => (
+            <Text key={i} style={styles.stepSmall}>
+              {i + stepIndex + 2}. {s.text}
+            </Text>
+          ))}
+          <View style={{ alignSelf: "stretch", marginTop: 8 }}>
+            {last ? (
+              <PrimaryButton title="I’ve arrived" onPress={onArrived} fontSize={18} />
+            ) : step.kind === "stairs" ? (
+              <PrimaryButton title={`I’m on floor ${step.text.match(/floor (\d)/)?.[1] ?? ""}`} onPress={onNext} fontSize={18} />
+            ) : (
+              <PrimaryButton title="Next step" onPress={onNext} fontSize={18} />
+            )}
           </View>
-        ))
+        </View>
       )}
     </>
   );
@@ -256,6 +340,11 @@ const styles = StyleSheet.create({
   results: { alignSelf: "stretch" },
   message: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.textDark, textAlign: "center" },
   nearText: { fontFamily: fonts.title, fontSize: 18, color: colors.textDark },
+  stepCard: { alignSelf: "stretch", backgroundColor: colors.white, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: colors.cardBorder, alignItems: "center", gap: 4 },
+  stepBig: { fontFamily: fonts.title, fontSize: 26, color: colors.textDark, textAlign: "center" },
+  stepSmall: { fontFamily: fonts.body, fontSize: 13, color: colors.textMuted },
+  toast: { position: "absolute", left: 16, right: 16, bottom: 24, backgroundColor: colors.black, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 16 },
+  toastText: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.white, textAlign: "center" },
   step: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: colors.white, borderRadius: 10, padding: 10, borderWidth: 1, borderColor: colors.cardBorder },
   stepNumber: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.black, backgroundColor: colors.yellow, width: 24, height: 24, borderRadius: 12, textAlign: "center", lineHeight: 24, overflow: "hidden" },
   stepText: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.textDark, flex: 1 },
