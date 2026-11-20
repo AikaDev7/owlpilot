@@ -8,12 +8,7 @@ import { RootStackParamList } from "../navigation";
 import { formatTime } from "../data/schedule";
 import { getNow, WEEKDAYS } from "../logic/demoClock";
 import { FULL_DAY_NAMES, HomeClass, homeClasses, nextClass } from "../logic/homeClasses";
-import { openBuildingInMaps } from "../logic/maps";
 import { colors, fonts, shadow } from "../theme";
-
-function openBuilding(c: HomeClass) {
-  openBuildingInMaps(c.buildingName || c.building);
-}
 
 function timeRange(c: HomeClass) {
   return `${formatTime(c.start)} - ${formatTime(c.end)}`;
@@ -73,14 +68,10 @@ export default function HomeScreen({ navigation }: NativeStackScreenProps<RootSt
                     <Ionicons name="location-outline" size={16} color={colors.black} />
                     <Text style={styles.upNextTitle}>{placeLine(next)}</Text>
                   </View>
-                  <Pressable onPress={() => openBuilding(next)} style={({ pressed }) => [styles.findButton, { opacity: pressed ? 0.8 : 1 }]}>
+                  <Pressable onPress={() => findClass(next)} style={({ pressed }) => [styles.findButton, { opacity: pressed ? 0.8 : 1 }]}>
                     <Ionicons name="scan-outline" size={24} color={colors.white} />
-                    <Text style={styles.findButtonText}>Find the Building</Text>
+                    <Text style={styles.findButtonText}>Find My Classroom</Text>
                     <Ionicons name="arrow-forward" size={20} color={colors.white} />
-                  </Pressable>
-                  <Pressable onPress={() => findClass(next)} style={({ pressed }) => [styles.scanButton, { opacity: pressed ? 0.8 : 1 }]}>
-                    <Ionicons name="camera-outline" size={18} color={colors.black} />
-                    <Text style={styles.scanButtonText}>Find My Class</Text>
                   </Pressable>
                 </>
               ) : (
@@ -109,10 +100,6 @@ export default function HomeScreen({ navigation }: NativeStackScreenProps<RootSt
                         <Text style={styles.cardPlace} numberOfLines={2}>{placeLine(c)}</Text>
                       </View>
                       <View style={styles.smallButtons}>
-                        <Pressable onPress={() => openBuilding(c)} style={styles.smallButton}>
-                          <Ionicons name="scan-outline" size={14} color={colors.black} />
-                          <Text style={styles.smallButtonText}>Find the building</Text>
-                        </Pressable>
                         <Pressable onPress={() => findClass(c)} style={styles.smallButton}>
                           <Ionicons name="camera-outline" size={14} color={colors.black} />
                           <Text style={styles.smallButtonText}>Find class</Text>
@@ -179,18 +166,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   findButtonText: { fontFamily: fonts.title, fontSize: 16, color: colors.white },
-  scanButton: {
-    borderWidth: 1,
-    borderColor: colors.black,
-    borderRadius: 8,
-    height: 32,
-    marginTop: 8,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-  },
-  scanButtonText: { fontFamily: fonts.bodyMedium, fontSize: 13, color: colors.black },
   empty: { fontFamily: fonts.bodyMedium, fontSize: 15, color: colors.black, marginTop: 12 },
 
   sectionTitle: { fontFamily: fonts.title, fontSize: 24, color: colors.textDark, marginTop: 28 },

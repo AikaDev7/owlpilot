@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   },
   boxCompact: { height: 40, backgroundColor: colors.inputGray, borderColor: colors.fieldBorder, paddingHorizontal: 14, paddingVertical: 0 },
   valueCompact: { fontSize: 14, lineHeight: 20, color: colors.dropdownText },
-  boxLabeled: { height: 67, alignItems: "flex-start", paddingTop: 8, paddingHorizontal: 8 },
+  boxLabeled: { height: 67, backgroundColor: colors.inputGray, borderWidth: 0, alignItems: "flex-start", paddingTop: 8, paddingHorizontal: 8 },
   valueColumnPlain: { justifyContent: "center" }, // no label: center the value vertically
   valueColumn: { flex: 1, alignSelf: "stretch", justifyContent: "space-between" },
   label: { fontFamily: fonts.body, fontSize: 10, lineHeight: 16, color: colors.labelGray },

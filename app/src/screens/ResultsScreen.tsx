@@ -283,22 +283,16 @@ export default function ResultsScreen({ navigation }: Props) {
               <Text style={styles.highlightLabel}>{tabLabel(schedule, selected)}: </Text>
               {schedule.highlight}
             </Text>
-            {missingCourses && <Text style={styles.waitLine}>Only {schedule.items.length} of {wantedCourses} {wantedCourses === 1 ? "course" : "courses"} fit</Text>}
             {!missingCourses && schedule.badges.length > 0 && (
               <View style={styles.tabBadges}>
                 {schedule.badges.map((b) => (
                   <View key={b} style={styles.tabBadge}>
-                    <Text style={styles.tabBadgeText}>{b}</Text>
+                    <Text style={styles.tabBadgeText}>{b.replace(/^[^A-Za-z0-9]+/, "")}</Text>
                   </View>
                 ))}
               </View>
             )}
             {schedule.onlineNote && <Text style={styles.highlight}>{schedule.onlineNote}</Text>}
-            {waitlisted > 0 && (
-              <Text style={styles.waitLine}>
-                {waitlisted === 1 ? "1 class in this schedule is waitlisted" : `${waitlisted} classes in this schedule are waitlisted`}
-              </Text>
-            )}
 
             <View style={styles.statsRow}>
               <Text style={styles.stat}>★ {schedule.avgRating.toFixed(1)} avg rating</Text>
@@ -308,7 +302,8 @@ export default function ResultsScreen({ navigation }: Props) {
               <Text style={styles.stat}>{schedule.items.length === 1 ? "1 course" : `${schedule.items.length} courses`}</Text>
             </View>
 
-            {schedule.items.map((item) => (
+            <Text style={styles.listTitle}>Your classes</Text>
+            {[...schedule.items.filter((i) => !i.suggested), ...schedule.items.filter((i) => i.suggested)].map((item) => (
               <CourseCard key={item.code} item={item} badges={badgesFor(item, bestCode)} warning={prereqWarning(item.code, profile.takenCourses)} expandable waitlistNote summary={summaryFor(item.professor)} summaryLoading={explainLoading} />
             ))}
             {initial?.notes
@@ -316,12 +311,37 @@ export default function ResultsScreen({ navigation }: Props) {
               .map((note, i) => (
                 <Text key={i} style={styles.note}>{note}</Text>
               ))}
+            {missingCourses && <Text style={styles.waitLine}>Only {schedule.items.length} of {wantedCourses} {wantedCourses === 1 ? "course" : "courses"} fit</Text>}
+            {waitlisted > 0 && (
+              <Text style={styles.waitLine}>
+                {waitlisted === 1 ? "1 class in this schedule is waitlisted" : `${waitlisted} classes in this schedule are waitlisted`}
+              </Text>
+            )}
 
             {(explainLoading || explained) && (
               <View style={styles.why}>
                 <Text style={styles.whyTitle}>Why this schedule?</Text>
                 <Text style={styles.body}>{explained ? explained.why : "Thinking about your schedule…"}</Text>
               </View>
+            )}
+
+            {schedule.waitlistOptions.length > 0 && (
+              <>
+                <Text style={styles.sectionTitle}>Waitlist options</Text>
+                <Text style={styles.sectionSub}>These courses have no open section that fits. You can join a waitlist.</Text>
+                {schedule.waitlistOptions.map(({ item: opt }) => (
+                  <CourseCard key={`wait-${opt.code}`} item={opt} badges={[`Waitlist · ${opt.waitCount} of ${waitCapacity(opt)} spots taken`, ...highRated(opt)]} variant="yellow" showRmp extra={`${opt.code} has no open section that fits your times.`}>
+                    {(explainLoading || summaryFor(opt.professor)) && (
+                      <Text style={styles.altSummary}>{explainLoading ? "Summarizing reviews…" : summaryFor(opt.professor)}</Text>
+                    )}
+                    <Text style={styles.waitLine}>You’d join the waitlist. A seat isn’t guaranteed.</Text>
+                    {swapError?.code === opt.code && <Text style={styles.error}>{swapError.message}</Text>}
+                    <Pressable onPress={() => choose(-1, opt)} style={styles.choose}>
+                      <Text style={styles.chooseText}>Add to my schedule</Text>
+                    </Pressable>
+                  </CourseCard>
+                ))}
+              </>
             )}
 
             {alternatives.length > 0 && (
@@ -346,34 +366,15 @@ export default function ResultsScreen({ navigation }: Props) {
               </>
             )}
 
-            {schedule.waitlistOptions.length > 0 && (
-              <>
-                <Text style={styles.sectionTitle}>Waitlist options</Text>
-                <Text style={styles.sectionSub}>These courses have no open section that fits. You can join a waitlist.</Text>
-                {schedule.waitlistOptions.map(({ item: opt }) => (
-                  <CourseCard key={`wait-${opt.code}`} item={opt} badges={[`Waitlist · ${opt.waitCount} of ${waitCapacity(opt)} spots taken`, ...highRated(opt)]} variant="yellow" showRmp extra={`${opt.code} has no open section that fits your times.`}>
-                    {(explainLoading || summaryFor(opt.professor)) && (
-                      <Text style={styles.altSummary}>{explainLoading ? "Summarizing reviews…" : summaryFor(opt.professor)}</Text>
-                    )}
-                    <Text style={styles.waitLine}>You’d join the waitlist. A seat isn’t guaranteed.</Text>
-                    {swapError?.code === opt.code && <Text style={styles.error}>{swapError.message}</Text>}
-                    <Pressable onPress={() => choose(-1, opt)} style={styles.choose}>
-                      <Text style={styles.chooseText}>Add to my schedule</Text>
-                    </Pressable>
-                  </CourseCard>
-                ))}
-              </>
-            )}
-
             {courseSwaps.length > 0 && (
               <>
-                <Text style={styles.sectionTitle}>Swap the course</Text>
-                <Text style={styles.sectionSub}>Both count toward your degree. Take one now and the other next semester.</Text>
+                <Text style={styles.sectionTitle}>Swap the courses</Text>
+                <Text style={styles.sectionSub}>A different course you need for your degree, with a better-rated professor. Take it now and the other one next semester.</Text>
                 {courseSwaps.map((idea) => (
                   <CourseCard key={idea.item.code} item={idea.item} badges={idea.item.tags.includes("outsidePreferredTime") ? ["Outside your preferred time"] : []} variant="yellow" showRmp extra={courseSwapLine(idea)}>
                     {swapError?.code === idea.item.code && <Text style={styles.error}>{swapError.message}</Text>}
                     <Pressable onPress={() => swapCourse(idea)} style={styles.choose}>
-                      <Text style={styles.chooseText}>Swap course</Text>
+                      <Text style={styles.chooseText}>Swap courses</Text>
                     </Pressable>
                   </CourseCard>
                 ))}
@@ -406,35 +407,36 @@ const styles = StyleSheet.create({
   logoYellow: { color: colors.yellow },
   heading: { fontFamily: fonts.title, fontSize: 25, lineHeight: 39, color: colors.textDark },
   subtitle: { fontFamily: fonts.body, fontSize: 12, lineHeight: 21, color: colors.textGray, marginBottom: 12 },
-  understood: { backgroundColor: colors.white, borderRadius: 12, padding: 14, marginBottom: 16, ...shadow },
-  understoodTitle: { fontFamily: fonts.title, fontSize: 16, color: colors.textDark, marginBottom: 4 },
+  understood: { backgroundColor: colors.understoodBg, borderColor: colors.understoodBorder, borderWidth: 1, borderRadius: 7, paddingHorizontal: 16, paddingVertical: 8, marginBottom: 12 },
+  understoodTitle: { fontFamily: fonts.title, fontSize: 19, lineHeight: 32, color: colors.textDark, marginBottom: 4 },
   spinner: { marginVertical: 8 },
   retry: { marginTop: 12 },
   row: { flexDirection: "row", marginTop: 4 },
   bullet: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.textDark, marginRight: 8 },
-  body: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.textGray, flexShrink: 1 },
+  body: { fontFamily: fonts.body, fontSize: 12, lineHeight: 21, color: colors.textGray, flexShrink: 1 },
   centerLink: { textAlign: "center", fontSize: 15, marginTop: 4 },
   link: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.badgeText, marginTop: 8 },
-  tabs: { gap: 8, paddingBottom: 8 },
-  tab: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 6, borderWidth: 1, borderColor: colors.inputBorder, backgroundColor: colors.chipGray },
-  tabSelected: { backgroundColor: colors.yellow, borderColor: colors.yellowBorder },
-  tabText: { fontFamily: fonts.bodyMedium, fontSize: 14, lineHeight: 22, color: colors.chipText },
-  highlight: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.textGray, marginTop: 4 },
-  highlightLabel: { fontFamily: fonts.bodyBold, color: colors.textDark },
+  tabs: { gap: 12, paddingBottom: 8 },
+  tab: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 16, borderWidth: 1, borderColor: colors.tabGrayBorder, backgroundColor: colors.tabGray, alignItems: "center", justifyContent: "center" },
+  tabSelected: { backgroundColor: colors.yellow, borderColor: colors.tabYellowBorder },
+  tabText: { fontFamily: fonts.titleRegular, fontSize: 16, lineHeight: 24, color: colors.black },
+  highlight: { fontFamily: fonts.body, fontSize: 14, lineHeight: 26, color: colors.black, marginTop: 8 },
+  highlightLabel: { fontFamily: fonts.bodyMedium },
   toast: { position: "absolute", left: 16, right: 16, bottom: 24, backgroundColor: colors.black, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 16 },
   toastText: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.white, textAlign: "center" },
-  tabBadges: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 8 },
+  tabBadges: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 4 },
   tabBadge: { backgroundColor: colors.badgeBg, borderColor: colors.badgeBorder, borderWidth: 0.5, borderRadius: 15, paddingHorizontal: 10 },
-  tabBadgeText: { fontFamily: fonts.bodyMedium, fontSize: 11, lineHeight: 20, color: colors.badgeText },
+  tabBadgeText: { fontFamily: fonts.bodyMedium, fontSize: 12, lineHeight: 24, color: colors.chipText },
   noMore: { fontFamily: fonts.bodyMedium, fontSize: 12, color: colors.textMuted, marginBottom: 4 },
-  statsRow: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", gap: 6, marginVertical: 12 },
-  stat: { fontFamily: fonts.bodyMedium, fontSize: 12, color: colors.textGray, backgroundColor: colors.badgeBg, borderRadius: 15, paddingHorizontal: 10, paddingVertical: 2 },
-  note: { fontFamily: fonts.body, fontSize: 13, color: colors.error, marginBottom: 8 },
+  statsRow: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", gap: 6, marginTop: 8, marginBottom: 24 },
+  stat: { fontFamily: fonts.body, fontSize: 13, lineHeight: 26, color: colors.black, backgroundColor: colors.badgeBg, borderColor: colors.badgeBorder, borderWidth: 0.5, borderRadius: 15, paddingHorizontal: 9 },
+  listTitle: { fontFamily: fonts.title, fontSize: 19, lineHeight: 27, color: colors.textDark, marginBottom: 16 },
+  note: { fontFamily: fonts.bodyMedium, fontSize: 12, lineHeight: 20, color: colors.error, marginBottom: 16 },
   emptyBox: { backgroundColor: colors.white, borderRadius: 12, padding: 14, marginBottom: 16 },
-  why: { backgroundColor: colors.white, borderRadius: 12, padding: 14, marginBottom: 16, ...shadow },
-  whyTitle: { fontFamily: fonts.title, fontSize: 16, color: colors.textDark, marginBottom: 4 },
+  why: { backgroundColor: colors.white, borderRadius: 11, paddingHorizontal: 16, paddingVertical: 8, marginBottom: 24, gap: 8, ...shadow },
+  whyTitle: { fontFamily: fonts.title, fontSize: 18, lineHeight: 27, color: colors.textDark },
   sectionTitle: { fontFamily: fonts.title, fontSize: 19, lineHeight: 27, color: colors.textDark },
-  sectionSub: { fontFamily: fonts.body, fontSize: 12, lineHeight: 21, color: colors.textGray, marginBottom: 8 },
+  sectionSub: { fontFamily: fonts.body, fontSize: 12, lineHeight: 21, color: colors.textGray, marginBottom: 16 },
   error: { fontFamily: fonts.bodyMedium, fontSize: 12, color: colors.error, marginBottom: 8 },
   waitLine: { fontFamily: fonts.bodySemiBold, fontSize: 12, lineHeight: 18, color: colors.amberText, marginTop: 4, marginBottom: 8 },
   altSummary: { fontFamily: fonts.body, fontSize: 12, lineHeight: 18, color: colors.textGray, marginBottom: 8 },
@@ -442,5 +444,5 @@ const styles = StyleSheet.create({
   chooseText: { fontFamily: fonts.titleRegular, fontSize: 14, lineHeight: 24, color: colors.dropdownText },
   campusBanner: { backgroundColor: colors.amberBg, borderColor: colors.amberBorder, borderWidth: 1, borderRadius: 12, padding: 14, marginBottom: 16 },
   campusText: { fontFamily: fonts.bodySemiBold, fontSize: 13, lineHeight: 19, color: colors.amberText, marginBottom: 10 },
-  buttons: { gap: 16, marginTop: 8, paddingHorizontal: 25 },
+  buttons: { gap: 24, marginTop: 16, paddingHorizontal: 25 },
 });

@@ -54,6 +54,11 @@ export function findProfessor(name: string): Professor | undefined {
 }
 
 // Building to show: the letter code ("Q") when it is a letter, otherwise the name (codes like "0970" mean nothing to students)
+// Full building name for display everywhere ("Engineering Technology Center"), never a bare letter
+export function buildingFullName(code: string, name: string) {
+  return name || code;
+}
+
 export function buildingLabel(code: string, name: string) {
   return /^[A-Za-z]+$/.test(code) || !name ? code : name;
 }

@@ -32,8 +32,16 @@ function placeLine(item: ScheduleItem) {
   return m ? `${mode} · ${m.buildingName || m.building} · Room ${m.room}` : mode;
 }
 
+// "Mon, Wed 10:00 AM–11:15 AM" becomes "Mon & Wed · 10:00 AM - 11:15 AM" (Lab: prefix is kept)
 function timeLines(item: ScheduleItem) {
-  return meetingLines(item).map((line) => line.split(" · ")[0]);
+  return meetingLines(item).map((line) => {
+    const text = line.split(" · ")[0];
+    const m = text.match(/^(Lab: )?(.*?) (\d{1,2}:\d{2} [AP]M)–(\d{1,2}:\d{2} [AP]M)$/);
+    if (!m) return text;
+    const days = m[2].split(", ");
+    const dayText = days.length > 1 ? `${days.slice(0, -1).join(", ")} & ${days[days.length - 1]}` : days[0];
+    return `${m[1] ?? ""}${dayText} · ${m[3]} - ${m[4]}`;
+  });
 }
 
 // Diana's course card: code + title + badges, professor + rating, days/time, mode + place
@@ -54,7 +62,7 @@ export default function CourseCard({ item, badges, variant = "white", expandable
           <Text style={styles.title}>{item.title}</Text>
         </View>
         <View style={styles.badges}>
-          {badges.map((b) => (
+          {badges.filter((b) => !b.startsWith("Suggested") && !b.startsWith("Outside")).map((b) => (
             <View key={b} style={[styles.badge, b.startsWith("Waitlist") && styles.badgeWait]}>
               <Text style={[styles.badgeText, b.startsWith("Waitlist") && styles.badgeWaitText]}>{b}</Text>
             </View>
@@ -91,6 +99,14 @@ export default function CourseCard({ item, badges, variant = "white", expandable
           <Text style={styles.ratingText}>{item.rating === null ? "No ratings yet" : `${item.rating.toFixed(1)}/5`}</Text>
         </View>
       </View>
+
+      {badges.filter((b) => b.startsWith("Outside")).map((b) => (
+        <Text key={b} style={styles.extra}>{b}</Text>
+      ))}
+
+      {badges.filter((b) => b.startsWith("Suggested")).map((b) => (
+        <Text key={b} style={styles.suggested}>{b}</Text>
+      ))}
 
       {warning ? <Text style={styles.warning}>{warning}</Text> : null}
 
@@ -165,6 +181,7 @@ const styles = StyleSheet.create({
   place: { fontFamily: fonts.bodyMedium, fontSize: 11, lineHeight: 20, color: colors.labelGray, flex: 1 },
   rating: { flexDirection: "row", alignItems: "flex-start", gap: 4, marginLeft: 8 },
   ratingText: { fontFamily: fonts.bodySemiBold, fontSize: 13, lineHeight: 20, color: colors.textMuted },
+  suggested: { fontFamily: fonts.bodyMedium, fontSize: 10, lineHeight: 18, color: colors.suggestedRed, marginBottom: 8 },
   warning: { fontFamily: fonts.bodySemiBold, fontSize: 12, lineHeight: 18, color: colors.amberText, marginBottom: 8 },
   extra: { fontFamily: fonts.bodyMedium, fontSize: 11, lineHeight: 16, color: colors.textMuted, marginBottom: 8 },
   details: { borderTopWidth: 1, borderTopColor: colors.cardDivider, paddingTop: 10, paddingBottom: 6, gap: 4 },

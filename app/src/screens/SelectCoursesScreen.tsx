@@ -71,7 +71,7 @@ export default function SelectCoursesScreen({ navigation }: Props) {
         <Text style={styles.title}>Select Your Courses</Text>
         <Text style={styles.subtitle}>Choose the classes you want to take. We’ll help you build the perfect schedule.</Text>
 
-        <View style={[styles.section, styles.row]}>
+        <View style={[styles.dropdowns, styles.row]}>
           <View style={styles.half}>
             <Dropdown label="Semester" options={SEMESTERS} value={semester} onSelect={setSemester} />
           </View>
@@ -152,10 +152,11 @@ const styles = StyleSheet.create({
   subtitle: { fontFamily: fonts.body, fontSize: 12, lineHeight: 21, color: colors.textGray, marginTop: 8 },
   section: { marginTop: 24 },
   field: { marginTop: 8 },
-  row: { flexDirection: "row", gap: 12 },
+  dropdowns: { marginTop: 32 },
+  row: { flexDirection: "row", gap: 14 },
   half: { flex: 1 },
   hint: { fontFamily: fonts.body, fontSize: 12, lineHeight: 21, color: colors.textGray, marginTop: 4 },
-  cards: { gap: 16, marginTop: 12 },
+  cards: { gap: 16, marginTop: 16 },
   error: { fontFamily: fonts.body, fontSize: 12, color: colors.error, marginTop: 6 },
   optionsTitle: { fontFamily: fonts.bodyMedium, fontSize: 16, lineHeight: 24, color: colors.textMuted },
   options: { gap: 16, marginTop: 16 },

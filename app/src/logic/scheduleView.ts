@@ -1,7 +1,7 @@
 // Display helpers for the My Schedule and Find tabs (plain formatting, no scheduler changes).
 import type { ScheduleItem } from "./scheduler";
 import type { Section } from "../data/sections";
-import { buildingLabel } from "../data/sections";
+import { buildingFullName } from "../data/sections";
 import { formatTime } from "../data/schedule";
 
 const ONLINE_CAMPUSES = ["KSU Online", "eCore"];
@@ -40,11 +40,11 @@ export function formatLabel(s: Section) {
   return "In Person";
 }
 
-// "In Person · Q · Room 204" or "Online (Asynchronous)"
+// "In Person · Engineering Technology Center · Room 204" or "Online (Asynchronous)"
 export function formatLine(item: ScheduleItem) {
   const label = formatLabel(item.lecture);
   const p = placeOf(item);
-  return p ? `${label} · ${buildingLabel(p.building, p.buildingName)} · Room ${p.room}` : label;
+  return p ? `${label} · ${buildingFullName(p.building, p.buildingName)} · Room ${p.room}` : label;
 }
 
 export type FindEntry = { course: string; title: string; days: string[]; start: number; end: number; building: string; buildingName: string; room: string };

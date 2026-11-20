@@ -6,14 +6,30 @@ import ScheduleHeader from "../components/ScheduleHeader";
 import TabBar, { TAB_BAR_SPACE } from "../components/TabBar";
 import { useProfile } from "../context/ProfileContext";
 import { RootStackParamList } from "../navigation";
-import { buildingLabel } from "../data/sections";
+import { buildingFullName } from "../data/sections";
 import { formatTime } from "../data/schedule";
-import { findEntries } from "../logic/scheduleView";
+import { getNow, WEEKDAYS } from "../logic/demoClock";
+import { findEntries, FindEntry } from "../logic/scheduleView";
 import { colors, fonts } from "../theme";
+
+// Minutes from "now" until the next time this class meets (this week, wrapping to next week)
+function minutesUntilNext(e: FindEntry) {
+  const now = getNow();
+  const nowAbs = Math.max(0, WEEKDAYS.indexOf(now.day)) * 1440 + now.minutes;
+  let best = Infinity;
+  for (const d of e.days) {
+    const i = WEEKDAYS.indexOf(d);
+    if (i === -1) continue;
+    let diff = i * 1440 + e.start - nowAbs;
+    if (diff < 0) diff += 7 * 1440;
+    best = Math.min(best, diff);
+  }
+  return best;
+}
 
 export default function ChooseClassScreen({ navigation }: NativeStackScreenProps<RootStackParamList, "ChooseClass">) {
   const { profile } = useProfile();
-  const entries = findEntries(profile.acceptedSchedule?.items ?? []);
+  const entries = findEntries(profile.acceptedSchedule?.items ?? []).sort((a, b) => minutesUntilNext(a) - minutesUntilNext(b));
 
   return (
     <View style={styles.root}>
@@ -28,7 +44,7 @@ export default function ChooseClassScreen({ navigation }: NativeStackScreenProps
               <Text style={styles.course}>{e.course}</Text>
               <Text style={styles.courseTitle}>{e.title}</Text>
               <Text style={styles.time}>{e.days.join(", ")} · {formatTime(e.start)} - {formatTime(e.end)}</Text>
-              <Text style={styles.place}>{buildingLabel(e.building, e.buildingName)} · Room {e.room}</Text>
+              <Text style={styles.place}>{buildingFullName(e.building, e.buildingName)} · Room {e.room}</Text>
               <Pressable
                 onPress={() => navigation.navigate("Destination", { building: e.building, room: e.room, course: e.course, buildingName: e.buildingName })}
                 style={({ pressed }) => [styles.button, { opacity: pressed ? 0.8 : 1 }]}

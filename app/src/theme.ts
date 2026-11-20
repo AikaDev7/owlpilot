@@ -51,6 +51,13 @@ export const colors = {
   successBg: "#DDF3E2", // green "You're here!" card
   successBorder: "#2E9E4F",
   successText: "#17602D",
+  infoBlue: "#0A1081", // reason line under "Options for You"
+  understoodBg: "#FFDF88", // "Here’s what I understood" box
+  understoodBorder: "#C29929",
+  tabGray: "#E3E3E3", // inactive strategy pill
+  tabGrayBorder: "#D5D5D5",
+  tabYellowBorder: "#ECB621",
+  suggestedRed: "#D50B0B", // "Suggested · Required for ..." line
   overlay: "rgba(0,0,0,0.4)", // dim background behind modals
 };
 

@@ -35,9 +35,9 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.divider,
   },
   texts: { flex: 1, paddingRight: 12 },
-  code: { fontFamily: fonts.bodyMedium, fontSize: 22, lineHeight: 28, color: colors.black },
-  title: { fontFamily: fonts.bodyMedium, fontSize: 14, lineHeight: 21, color: colors.textMuted },
-  reason: { fontFamily: fonts.body, fontSize: 12, lineHeight: 18, color: colors.textGray },
+  code: { fontFamily: fonts.bodyMedium, fontSize: 22, lineHeight: 24, color: colors.black },
+  title: { fontFamily: fonts.bodyMedium, fontSize: 14, lineHeight: 21, color: colors.textMuted, marginTop: 4 },
+  reason: { fontFamily: fonts.bodyMedium, fontSize: 11, lineHeight: 21, color: colors.infoBlue, marginTop: 3 },
   plus: {
     width: 28,
     height: 28,
