@@ -19,7 +19,7 @@ import { colors, fonts, shadow } from "../theme";
 // Where the student is, found from a photo or picked by hand
 type Located = { nodeId: string; label: string };
 // What the result area shows
-type Result = { kind: "here" } | { kind: "located"; located: Located } | { kind: "message"; text: string } | { kind: "otherBuilding"; text: string };
+type Result = { kind: "here"; confirm?: boolean } | { kind: "located"; located: Located } | { kind: "message"; text: string } | { kind: "otherBuilding"; text: string };
 
 const MIN_CONFIDENCE = 0.4;
 
@@ -61,6 +61,11 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
     if (!guide || !current || current.kind !== "walk" || totalSteps === null) return;
     if ((totalSteps - baseSteps.current) * METERS_PER_STEP >= current.meters && stepIndex < guide.length - 1) goToStep(stepIndex + 1);
   }, [totalSteps]);
+
+  // Reaching the last step means we arrived: show the green card by itself
+  useEffect(() => {
+    if (located && guide && stepIndex >= guide.length - 1) setResult({ kind: "here", confirm: true });
+  }, [located, guide, stepIndex]);
 
   function locate(nodeId: string, rescan = false) {
     const node = findNode(nodeId);
@@ -132,6 +137,10 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
   const askPermission = permission !== null && !permission.granted && permission.canAskAgain;
   const showArrow = located && heading !== null && !!current?.dir && current.kind !== "stairs";
   const arrowAngle = current?.dir && heading !== null ? mapBearing(current.dir) + northOffsetDeg - heading : 0;
+  const metersLeft =
+    current?.kind === "walk" && totalSteps !== null
+      ? Math.max(0, Math.round(current.meters - (totalSteps - baseSteps.current) * METERS_PER_STEP))
+      : null;
   const startsLine = startsText(profile.acceptedSchedule, course);
 
   return (
@@ -159,10 +168,12 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
         {cameraAllowed ? (
           <>
             <CameraView ref={cameraRef} style={StyleSheet.absoluteFill} facing="back" />
-            <View style={styles.frameWrap} pointerEvents="none">
-              <View style={styles.frame} />
-              <Text style={styles.frameHint}>Point at a room sign</Text>
-            </View>
+            {!located && (
+              <View style={styles.frameWrap} pointerEvents="none">
+                <View style={styles.frame} />
+                <Text style={styles.frameHint}>Point at a room sign</Text>
+              </View>
+            )}
           </>
         ) : (
           <View style={styles.noCamera}>
@@ -210,6 +221,7 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
               <Text style={styles.hereTitle}>You’re here!</Text>
               <Text style={styles.hereText}>{course ? `${course} · ${targetId}` : targetId}</Text>
               {startsLine && <Text style={styles.hereText}>{startsLine}</Text>}
+              {result.confirm && <Text style={styles.hereHint}>Scan the door sign to confirm</Text>}
             </View>
           )}
           {result?.kind === "located" && (
@@ -218,6 +230,7 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
               targetId={targetId}
               guide={guide}
               stepIndex={stepIndex}
+              metersLeft={metersLeft}
               onNext={() => goToStep(stepIndex + 1)}
               onArrived={() => setResult({ kind: "here" })}
               onSwitch={(l) => locate(l.nodeId)}
@@ -273,13 +286,14 @@ type LocatedProps = {
   targetId: string;
   guide: GuideStep[] | null;
   stepIndex: number;
+  metersLeft: number | null;
   otherFloor: Located | null;
   onSwitch: (l: Located) => void;
   onNext: () => void;
   onArrived: () => void;
 };
 
-function LocatedView({ located, targetId, guide, stepIndex, otherFloor, onSwitch, onNext, onArrived }: LocatedProps) {
+function LocatedView({ located, targetId, guide, stepIndex, metersLeft, otherFloor, onSwitch, onNext, onArrived }: LocatedProps) {
   const node = findNode(located.nodeId)!;
   const step = guide?.[stepIndex];
   const last = guide ? stepIndex >= guide.length - 1 : true;
@@ -300,6 +314,7 @@ function LocatedView({ located, targetId, guide, stepIndex, otherFloor, onSwitch
         <View style={styles.stepCard}>
           {step.kind === "stairs" && <Ionicons name="footsteps" size={36} color={colors.black} />}
           <Text style={styles.stepBig}>{step.text}</Text>
+          {metersLeft !== null && step.kind === "walk" && <Text style={styles.stepLeft}>{metersLeft} m left</Text>}
           {rest.map((s, i) => (
             <Text key={i} style={styles.stepSmall}>
               {i + stepIndex + 2}. {s.text}
@@ -342,6 +357,7 @@ const styles = StyleSheet.create({
   nearText: { fontFamily: fonts.title, fontSize: 18, color: colors.textDark },
   stepCard: { alignSelf: "stretch", backgroundColor: colors.white, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: colors.cardBorder, alignItems: "center", gap: 4 },
   stepBig: { fontFamily: fonts.title, fontSize: 26, color: colors.textDark, textAlign: "center" },
+  stepLeft: { fontFamily: fonts.bodySemiBold, fontSize: 15, color: colors.textDark },
   stepSmall: { fontFamily: fonts.body, fontSize: 13, color: colors.textMuted },
   toast: { position: "absolute", left: 16, right: 16, bottom: 24, backgroundColor: colors.black, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 16 },
   toastText: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.white, textAlign: "center" },
@@ -350,6 +366,7 @@ const styles = StyleSheet.create({
   stepText: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.textDark, flex: 1 },
   here: { backgroundColor: colors.successBg, borderColor: colors.successBorder, borderWidth: 1, borderRadius: 12, padding: 14 },
   hereTitle: { fontFamily: fonts.title, fontSize: 22, color: colors.successText },
+  hereHint: { fontFamily: fonts.body, fontSize: 12, color: colors.successText, marginTop: 6 },
   hereText: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.successText, marginTop: 2 },
 
   overlay: { flex: 1, backgroundColor: colors.overlay, justifyContent: "flex-end" },

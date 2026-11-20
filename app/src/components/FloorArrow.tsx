@@ -22,7 +22,7 @@ export default function FloorArrow({ angle }: { angle: number }) {
 
   return (
     <View style={styles.wrap} pointerEvents="none">
-      <View style={[styles.floor, { transform: [{ perspective: 500 }, { rotateX: "60deg" }, { rotateZ: `${angle}deg` }] }]}>
+      <View style={[styles.floor, { transform: [{ perspective: 500 }, { rotateX: "60deg" }, { rotateZ: `${angle}deg` }, { scale: 1.3 }] }]}>
         <View style={styles.head} />
         <View style={styles.shaft} />
         {chevrons.map((v, i) => (
@@ -43,7 +43,7 @@ export default function FloorArrow({ angle }: { angle: number }) {
 }
 
 const styles = StyleSheet.create({
-  wrap: { ...StyleSheet.absoluteFill, alignItems: "center", justifyContent: "center" },
+  wrap: { ...StyleSheet.absoluteFill, alignItems: "center", justifyContent: "flex-end", paddingBottom: 30 },
   floor: { width: 140, height: 240, alignItems: "center", justifyContent: "center" },
   head: {
     width: 0,
