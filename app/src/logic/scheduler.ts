@@ -688,18 +688,21 @@ function solve(input: SchedulerInput): Solved {
 
 const DAY_ORDER = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-// Selected courses that have no section on the chosen campus (or online) but do on Marietta, where most CS and AI
-// classes meet. Empty when the campus is already Marietta or switching would not help.
-export function mariettaOnlyCourses(input: SchedulerInput): string[] {
+// Selected courses missing from the schedule that have an open in-person section on Marietta campus but none on the
+// chosen campus (online sections do not count). Empty when the campus is already Marietta.
+export function mariettaOnlyCourses(input: SchedulerInput, scheduledCodes: string[] = []): string[] {
   if (!input.campus || input.campus === "Marietta") return [];
   const here = makeContext(input);
   const marietta = makeContext({ ...input, campus: "Marietta" });
   const taken = new Set(input.takenCourses.map(normCode));
+  const scheduled = new Set(scheduledCodes.map(normCode));
+  const inPersonOpen = (c: { code: string; title: string }, ctx: Context) =>
+    allItems(c, ctx, undefined, true).some((i) => !i.online && !i.waitlist);
   return input.selectedCourses
     .map(normCode)
-    .filter((code) => !taken.has(code) && sectionsByCourse.has(code))
+    .filter((code) => !taken.has(code) && !scheduled.has(code) && sectionsByCourse.has(code))
     .map((code) => ({ code, title: findCourse(code)?.title ?? code }))
-    .filter((c) => allItems(c, here).length === 0 && allItems(c, marietta).length > 0)
+    .filter((c) => !inPersonOpen(c, here) && inPersonOpen(c, marietta))
     .map((c) => c.code);
 }
 

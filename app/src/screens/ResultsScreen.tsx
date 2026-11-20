@@ -205,8 +205,9 @@ export default function ResultsScreen({ navigation }: Props) {
   );
   // Selected courses missing because they are not offered on the chosen campus: offer Marietta (where most CS and AI classes meet)
   const wantedCourses = input?.preferences.numCourses ?? 0;
-  const bestCount = Math.max(0, ...schedules.map((s) => s.items.length));
-  const campusFix = input && bestCount < wantedCourses && mariettaOnlyCourses(input).length > 0;
+  const bestSchedule = schedules.reduce<Schedule | null>((best, s) => (!best || s.items.length > best.items.length ? s : best), null);
+  const campusFix =
+    input && bestSchedule && bestSchedule.items.length < wantedCourses && mariettaOnlyCourses(input, bestSchedule.items.map((i) => i.code)).length > 0;
   const missingCourses = !!schedule && schedule.items.length < wantedCourses;
   const alternatives = schedule ? schedule.items.map((item, index) => ({ item, index })).filter((x) => x.item.alternative) : [];
 
@@ -281,7 +282,7 @@ export default function ResultsScreen({ navigation }: Props) {
               <Text style={styles.highlightLabel}>{tabLabel(schedule, selected)}: </Text>
               {schedule.highlight}
             </Text>
-            {missingCourses && <Text style={styles.waitLine}>Only {schedule.items.length} of {wantedCourses} courses fit</Text>}
+            {missingCourses && <Text style={styles.waitLine}>Only {schedule.items.length} of {wantedCourses} {wantedCourses === 1 ? "course" : "courses"} fit</Text>}
             {!missingCourses && schedule.badges.length > 0 && (
               <View style={styles.tabBadges}>
                 {schedule.badges.map((b) => (
@@ -300,8 +301,10 @@ export default function ResultsScreen({ navigation }: Props) {
 
             <View style={styles.statsRow}>
               <Text style={styles.stat}>★ {schedule.avgRating.toFixed(1)} avg rating</Text>
-              <Text style={styles.stat}>{schedule.daysOnCampus} days on campus</Text>
-              <Text style={styles.stat}>{schedule.items.length} courses</Text>
+              {schedule.daysOnCampus > 0 && (
+                <Text style={styles.stat}>{schedule.daysOnCampus === 1 ? "1 day on campus" : `${schedule.daysOnCampus} days on campus`}</Text>
+              )}
+              <Text style={styles.stat}>{schedule.items.length === 1 ? "1 course" : `${schedule.items.length} courses`}</Text>
             </View>
 
             {schedule.items.map((item) => (
