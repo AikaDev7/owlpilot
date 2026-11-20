@@ -25,6 +25,7 @@ const MIN_CONFIDENCE = 0.4;
 
 function whereLabel(node: MapNode): string {
   if (node.type === "room") return `near ${node.id}`;
+  if (node.type === "entrance") return "at the main entrance";
   return `at the ${node.type}`;
 }
 
@@ -96,8 +97,8 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
       }
       return locate(sign.room, true);
     }
-    if (sign.landmark === "entrance") return locate("entrance-1", true);
-    if (sign.landmark === "stairs" || sign.landmark === "elevator") return locate(`${sign.landmark}-${lastFloor}`, true);
+    if (sign.landmark === "entrance") return locate("entrance", true);
+    if (sign.landmark === "stairs" || sign.landmark === "elevator") return locate(`${sign.landmark}${lastFloor}_s`, true);
     setResult({ kind: "message", text: "We can’t place that sign on our map yet." });
   }
 
@@ -130,7 +131,7 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
     const node = findNode(located.nodeId);
     if (!node || (node.type !== "stairs" && node.type !== "elevator")) return null;
     const floor = node.floor === 1 ? 2 : 1;
-    return { nodeId: `${node.type}-${floor}`, label: located.label };
+    return { nodeId: located.nodeId.replace(/^(stairs|elevator)\d/, `$1${floor}`), label: located.label };
   }
 
   const cameraAllowed = permission?.granted === true;
@@ -271,11 +272,11 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
 
 function locationChoices(): { id: string; label: string }[] {
   const landmarks = [
-    { id: "entrance-1", label: "Entrance (floor 1)" },
-    { id: "stairs-1", label: "Stairs (floor 1)" },
-    { id: "stairs-2", label: "Stairs (floor 2)" },
-    { id: "elevator-1", label: "Elevator (floor 1)" },
-    { id: "elevator-2", label: "Elevator (floor 2)" },
+    { id: "entrance", label: "Main entrance (floor 2)" },
+    { id: "stairs1_s", label: "Lobby stairs (floor 1)" },
+    { id: "stairs2_s", label: "Lobby stairs (floor 2)" },
+    { id: "elevator1_s", label: "Elevator (floor 1)" },
+    { id: "elevator2_s", label: "Elevator (floor 2)" },
   ];
   const rooms = mapRooms().map((r) => ({ id: r.id, label: `${r.id} (floor ${r.floor})` }));
   return [...landmarks, ...rooms];

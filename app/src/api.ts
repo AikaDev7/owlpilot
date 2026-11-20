@@ -101,7 +101,8 @@ export async function explainSchedule(input: ExplainRequest): Promise<Explanatio
 // What the server read from one photo of a sign (POST /api/read-sign)
 export type SignResult = {
   kind: "room" | "landmark" | "none";
-  room: string | null; // "Q-207"
+  room: string | null; // "Q-207" (the sign closest to the photo center)
+  allRooms?: string[]; // every room number visible
   landmark: "stairs" | "elevator" | "entrance" | "restroom" | "exit" | null;
   confidence: number; // 0-1
   error?: string;
@@ -122,6 +123,7 @@ export async function readSign(imageBase64: string): Promise<SignResult> {
     return {
       kind: data.kind === "room" || data.kind === "landmark" ? data.kind : "none",
       room: typeof data.room === "string" ? data.room : null,
+      allRooms: Array.isArray(data.allRooms) ? data.allRooms.filter((r: unknown) => typeof r === "string") : [],
       landmark: typeof data.landmark === "string" ? data.landmark : null,
       confidence: typeof data.confidence === "number" ? data.confidence : 0,
       error: data.error,

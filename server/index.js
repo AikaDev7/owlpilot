@@ -370,37 +370,42 @@ const SIGN_SCHEMA = {
     kind: { type: "STRING" }, // "room", "landmark" or "none"
     room: { type: "STRING" }, // "" when none
     landmark: { type: "STRING" }, // "" when none
+    allRooms: { type: "ARRAY", items: { type: "STRING" } }, // every room number visible, left to right
     confidence: { type: "NUMBER" },
   },
-  required: ["kind", "room", "landmark", "confidence"],
+  required: ["kind", "room", "landmark", "allRooms", "confidence"],
 };
 
 const SIGN_PROMPT = `Look at the photo. It was taken inside a university building (building Q). First read any text you can see.
-- If you can read a room number (for example on a door sign or a plaque, even on a plain background), answer kind "room" and put it in "room". Normalize the format to "<building letter>-<number>": "Q 207" and "Q207" become "Q-207", "J 1111" becomes "J-1111". Keep the building letter if the sign shows one. Only if the sign shows a number with no letter at all, assume building Q ("207" becomes "Q-207").
-- Else if you clearly see stairs, an elevator, an entrance, or a restroom/exit sign, answer kind "landmark" and set "landmark" to one of: stairs, elevator, entrance, restroom, exit.
+- If you can read a room number (for example on a door sign or a plaque, even on a plain background), answer kind "room". Real signs often show only the number, and two signs can be side by side ("206 CLASSROOM" and "207 CLASSROOM"). List EVERY room number you can read in "allRooms", and put in "room" the one whose sign is closest to the center of the photo. Normalize the format to "<building letter>-<number>": "Q 207" and "Q207" become "Q-207", "J 1111" becomes "J-1111". Keep the building letter if the sign shows one. Only if the sign shows a number with no letter at all, assume building Q ("207" becomes "Q-207").
+- Else if you clearly see stairs, an elevator, an entrance, or a restroom/exit sign, answer kind "landmark" and set "landmark" to one of: stairs, elevator, entrance (the main entrance / front doors), restroom, exit.
 - Otherwise answer kind "none".
 Do not invent a room number you cannot read. "confidence" is 0 to 1. Use an empty string for fields that do not apply. "kind" is exactly one of: room, landmark, none.`;
 
-// Turns Gemini's reply into a safe { kind, room, landmark, confidence }
-function cleanSign(raw) {
-  const landmarks = ["stairs", "elevator", "entrance", "restroom", "exit"];
-  let room = null;
-  if (typeof raw.room === "string") {
-    // keep the building letter if there is one ("J 1111" -> "J-1111"); no letter means building Q
-    const m = raw.room.toUpperCase().match(/^\s*([A-Z])?[\s-]*(\d{3,4})\s*$/);
-    if (m) room = `${m[1] || "Q"}-${m[2]}`;
-  }
-  const landmark = landmarks.includes(raw.landmark) ? raw.landmark : null;
-  const confidence = typeof raw.confidence === "number" ? Math.max(0, Math.min(1, raw.confidence)) : 0;
-  if (raw.kind === "room" && room) return { kind: "room", room, landmark: null, confidence };
-  if (raw.kind === "landmark" && landmark) return { kind: "landmark", room: null, landmark, confidence };
-  return { kind: "none", room: null, landmark: null, confidence: 0 };
+// "Q 207" / "207" -> "Q-207"; keeps a visible building letter ("J 1111" -> "J-1111"); null if not a room
+function normalizeRoom(text) {
+  if (typeof text !== "string") return null;
+  const m = text.toUpperCase().match(/^\s*([A-Z])?[\s-]*(\d{3,4})\s*$/);
+  return m ? `${m[1] || "Q"}-${m[2]}` : null;
 }
 
-// Body: { image: base64 JPEG }   Reply: { kind, room, landmark, confidence }  (or { kind: "none", error: "AI unavailable" })
+// Turns Gemini's reply into a safe { kind, room, allRooms, landmark, confidence }
+function cleanSign(raw) {
+  const landmarks = ["stairs", "elevator", "entrance", "restroom", "exit"];
+  const allRooms = [...new Set((Array.isArray(raw.allRooms) ? raw.allRooms : []).map(normalizeRoom).filter(Boolean))];
+  const room = normalizeRoom(raw.room) || allRooms[0] || null;
+  if (room && !allRooms.includes(room)) allRooms.push(room);
+  const landmark = landmarks.includes(raw.landmark) ? raw.landmark : null;
+  const confidence = typeof raw.confidence === "number" ? Math.max(0, Math.min(1, raw.confidence)) : 0;
+  if (raw.kind === "room" && room) return { kind: "room", room, allRooms, landmark: null, confidence };
+  if (raw.kind === "landmark" && landmark) return { kind: "landmark", room: null, allRooms: [], landmark, confidence };
+  return { kind: "none", room: null, allRooms: [], landmark: null, confidence: 0 };
+}
+
+// Body: { image: base64 JPEG }   Reply: { kind, room (closest to the photo center), allRooms, landmark, confidence }  (or { kind: "none", error: "AI unavailable" })
 // Not cached and the image is never logged.
 app.post("/api/read-sign", async (req, res) => {
-  const failure = { kind: "none", room: null, landmark: null, confidence: 0, error: "AI unavailable" };
+  const failure = { kind: "none", room: null, allRooms: [], landmark: null, confidence: 0, error: "AI unavailable" };
   const image = typeof req.body?.image === "string" ? req.body.image.replace(/^data:image\/\w+;base64,/, "") : "";
   if (!image) return res.json(failure);
   if (!process.env.GEMINI_API_KEY) {

@@ -1,117 +1,1164 @@
 {
+ "building": "Q",
+ "name": "Engineering Technology Center (Building Q), Marietta",
+ "demo": false,
+ "source": "Floor 1 and 2 evacuation plans photographed on site (Nov 19, 2026), scaled from Diana's step counts",
+ "units": "meters; x = east, y = south; floors 1 and 2. Main entrance is on floor 2.",
  "northOffsetDeg": 0,
- "_DEMO": "DEMO DATA, not the real building. Replace with the real layout from the Q building evacuation plans. x = meters east, y = meters south. Edge weights are computed from the coordinates (stairs/elevator floor links are in indoorRoute.ts).",
+ "notes": [
+  "Room signs show only the number (e.g. '207 CLASSROOM'), no 'Q' letter.",
+  "Diana's walk: entrance to Q-207 ~34 steps, Q-207 to Stair 3 ~13, Stair 3 (floor 1) to Q-109 ~50, Q-109 to Q-107 ~29."
+ ],
  "nodes": [
-  { "id": "h1-0", "type": "hall", "floor": 1, "x": 0, "y": 0 },
-  { "id": "h1-10", "type": "hall", "floor": 1, "x": 10, "y": 0 },
-  { "id": "h1-15", "type": "hall", "floor": 1, "x": 15, "y": 0 },
-  { "id": "h1-20", "type": "hall", "floor": 1, "x": 20, "y": 0 },
-  { "id": "h1-25", "type": "hall", "floor": 1, "x": 25, "y": 0 },
-  { "id": "h1-30", "type": "hall", "floor": 1, "x": 30, "y": 0 },
-  { "id": "h1-35", "type": "hall", "floor": 1, "x": 35, "y": 0 },
-  { "id": "h1-40", "type": "hall", "floor": 1, "x": 40, "y": 0 },
-  { "id": "h1-45", "type": "hall", "floor": 1, "x": 45, "y": 0 },
-  { "id": "h1-55", "type": "hall", "floor": 1, "x": 55, "y": 0 },
-  { "id": "h1-60", "type": "hall", "floor": 1, "x": 60, "y": 0 },
-  { "id": "Q-101", "type": "room", "floor": 1, "x": 10, "y": -3 },
-  { "id": "Q-102", "type": "room", "floor": 1, "x": 10, "y": 3 },
-  { "id": "Q-103", "type": "room", "floor": 1, "x": 15, "y": -3 },
-  { "id": "Q-104", "type": "room", "floor": 1, "x": 15, "y": 3 },
-  { "id": "Q-105", "type": "room", "floor": 1, "x": 20, "y": -3 },
-  { "id": "Q-106", "type": "room", "floor": 1, "x": 20, "y": 3 },
-  { "id": "Q-107", "type": "room", "floor": 1, "x": 25, "y": -3 },
-  { "id": "Q-108", "type": "room", "floor": 1, "x": 25, "y": 3 },
-  { "id": "Q-109", "type": "room", "floor": 1, "x": 30, "y": -3 },
-  { "id": "Q-110", "type": "room", "floor": 1, "x": 30, "y": 3 },
-  { "id": "Q-111", "type": "room", "floor": 1, "x": 35, "y": -3 },
-  { "id": "Q-112", "type": "room", "floor": 1, "x": 35, "y": 3 },
-  { "id": "Q-113", "type": "room", "floor": 1, "x": 40, "y": -3 },
-  { "id": "Q-114", "type": "room", "floor": 1, "x": 40, "y": 3 },
-  { "id": "Q-115", "type": "room", "floor": 1, "x": 45, "y": -3 },
-  { "id": "stairs-1", "type": "stairs", "floor": 1, "x": 55, "y": -3 },
-  { "id": "elevator-1", "type": "elevator", "floor": 1, "x": 60, "y": -3 },
-  { "id": "h2-10", "type": "hall", "floor": 2, "x": 10, "y": 0 },
-  { "id": "h2-15", "type": "hall", "floor": 2, "x": 15, "y": 0 },
-  { "id": "h2-20", "type": "hall", "floor": 2, "x": 20, "y": 0 },
-  { "id": "h2-25", "type": "hall", "floor": 2, "x": 25, "y": 0 },
-  { "id": "h2-30", "type": "hall", "floor": 2, "x": 30, "y": 0 },
-  { "id": "h2-35", "type": "hall", "floor": 2, "x": 35, "y": 0 },
-  { "id": "h2-40", "type": "hall", "floor": 2, "x": 40, "y": 0 },
-  { "id": "h2-45", "type": "hall", "floor": 2, "x": 45, "y": 0 },
-  { "id": "h2-55", "type": "hall", "floor": 2, "x": 55, "y": 0 },
-  { "id": "h2-60", "type": "hall", "floor": 2, "x": 60, "y": 0 },
-  { "id": "Q-201", "type": "room", "floor": 2, "x": 10, "y": -3 },
-  { "id": "Q-202", "type": "room", "floor": 2, "x": 10, "y": 3 },
-  { "id": "Q-203", "type": "room", "floor": 2, "x": 15, "y": -3 },
-  { "id": "Q-204", "type": "room", "floor": 2, "x": 15, "y": 3 },
-  { "id": "Q-205", "type": "room", "floor": 2, "x": 20, "y": -3 },
-  { "id": "Q-206", "type": "room", "floor": 2, "x": 20, "y": 3 },
-  { "id": "Q-207", "type": "room", "floor": 2, "x": 25, "y": -3 },
-  { "id": "Q-208", "type": "room", "floor": 2, "x": 25, "y": 3 },
-  { "id": "Q-209", "type": "room", "floor": 2, "x": 30, "y": -3 },
-  { "id": "Q-210", "type": "room", "floor": 2, "x": 30, "y": 3 },
-  { "id": "Q-211", "type": "room", "floor": 2, "x": 35, "y": -3 },
-  { "id": "Q-212", "type": "room", "floor": 2, "x": 35, "y": 3 },
-  { "id": "Q-213", "type": "room", "floor": 2, "x": 40, "y": -3 },
-  { "id": "Q-214", "type": "room", "floor": 2, "x": 40, "y": 3 },
-  { "id": "Q-215", "type": "room", "floor": 2, "x": 45, "y": -3 },
-  { "id": "stairs-2", "type": "stairs", "floor": 2, "x": 55, "y": -3 },
-  { "id": "elevator-2", "type": "elevator", "floor": 2, "x": 60, "y": -3 },
-  { "id": "entrance-1", "type": "entrance", "floor": 1, "x": -4, "y": 0 } ],
+  {
+   "id": "entrance",
+   "type": "entrance",
+   "floor": 2,
+   "x": 33.9,
+   "y": 82.2,
+   "label": "Main entrance"
+  },
+  {
+   "id": "lobby2",
+   "type": "hall",
+   "floor": 2,
+   "x": 33.9,
+   "y": 78.3,
+   "label": "Lobby"
+  },
+  {
+   "id": "h2_se",
+   "type": "hall",
+   "floor": 2,
+   "x": 21.9,
+   "y": 78.3,
+   "label": "h2_se"
+  },
+  {
+   "id": "h2_sw",
+   "type": "hall",
+   "floor": 2,
+   "x": 12.8,
+   "y": 78.3,
+   "label": "h2_sw"
+  },
+  {
+   "id": "h2_e_1600",
+   "type": "hall",
+   "floor": 2,
+   "x": 21.9,
+   "y": 69.4,
+   "label": "h2_e_1600"
+  },
+  {
+   "id": "h2_e_1505",
+   "type": "hall",
+   "floor": 2,
+   "x": 21.9,
+   "y": 64.2,
+   "label": "h2_e_1505"
+  },
+  {
+   "id": "h2_e_1360",
+   "type": "hall",
+   "floor": 2,
+   "x": 21.9,
+   "y": 56.1,
+   "label": "h2_e_1360"
+  },
+  {
+   "id": "h2_e_1165",
+   "type": "hall",
+   "floor": 2,
+   "x": 21.9,
+   "y": 45.3,
+   "label": "h2_e_1165"
+  },
+  {
+   "id": "h2_e_1060",
+   "type": "hall",
+   "floor": 2,
+   "x": 21.9,
+   "y": 39.4,
+   "label": "h2_e_1060"
+  },
+  {
+   "id": "h2_e_910",
+   "type": "hall",
+   "floor": 2,
+   "x": 21.9,
+   "y": 31.1,
+   "label": "h2_e_910"
+  },
+  {
+   "id": "h2_e_760",
+   "type": "hall",
+   "floor": 2,
+   "x": 21.9,
+   "y": 22.8,
+   "label": "h2_e_760"
+  },
+  {
+   "id": "h2_e_610",
+   "type": "hall",
+   "floor": 2,
+   "x": 21.9,
+   "y": 14.4,
+   "label": "h2_e_610"
+  },
+  {
+   "id": "h2_ne",
+   "type": "hall",
+   "floor": 2,
+   "x": 21.9,
+   "y": 8.6,
+   "label": "h2_ne"
+  },
+  {
+   "id": "h2_w_1505",
+   "type": "hall",
+   "floor": 2,
+   "x": 12.8,
+   "y": 64.2,
+   "label": "h2_w_1505"
+  },
+  {
+   "id": "h2_w_1450",
+   "type": "hall",
+   "floor": 2,
+   "x": 12.8,
+   "y": 61.1,
+   "label": "h2_w_1450"
+  },
+  {
+   "id": "h2_w_1370",
+   "type": "hall",
+   "floor": 2,
+   "x": 12.2,
+   "y": 56.7,
+   "label": "h2_w_1370"
+  },
+  {
+   "id": "h2_w_1220",
+   "type": "hall",
+   "floor": 2,
+   "x": 11.9,
+   "y": 48.3,
+   "label": "h2_w_1220"
+  },
+  {
+   "id": "h2_w_1165",
+   "type": "hall",
+   "floor": 2,
+   "x": 11.9,
+   "y": 45.3,
+   "label": "h2_w_1165"
+  },
+  {
+   "id": "h2_w_1070",
+   "type": "hall",
+   "floor": 2,
+   "x": 11.7,
+   "y": 40.0,
+   "label": "h2_w_1070"
+  },
+  {
+   "id": "h2_w_920",
+   "type": "hall",
+   "floor": 2,
+   "x": 11.4,
+   "y": 31.7,
+   "label": "h2_w_920"
+  },
+  {
+   "id": "h2_w_770",
+   "type": "hall",
+   "floor": 2,
+   "x": 10.8,
+   "y": 23.3,
+   "label": "h2_w_770"
+  },
+  {
+   "id": "h2_w_610",
+   "type": "hall",
+   "floor": 2,
+   "x": 10.6,
+   "y": 14.4,
+   "label": "h2_w_610"
+  },
+  {
+   "id": "h2_nw",
+   "type": "hall",
+   "floor": 2,
+   "x": 10.3,
+   "y": 8.6,
+   "label": "h2_nw"
+  },
+  {
+   "id": "h2_n_mid",
+   "type": "hall",
+   "floor": 2,
+   "x": 16.7,
+   "y": 8.6,
+   "label": "h2_n_mid"
+  },
+  {
+   "id": "h2_s_e2",
+   "type": "hall",
+   "floor": 2,
+   "x": 28.9,
+   "y": 78.3,
+   "label": "h2_s_e2"
+  },
+  {
+   "id": "h2_s_e3",
+   "type": "hall",
+   "floor": 2,
+   "x": 45.6,
+   "y": 78.3,
+   "label": "h2_s_e3"
+  },
+  {
+   "id": "stairs2_sw",
+   "type": "stairs",
+   "floor": 2,
+   "x": 6.7,
+   "y": 61.4,
+   "label": "Stair 3 (southwest)"
+  },
+  {
+   "id": "stairs2_s",
+   "type": "stairs",
+   "floor": 2,
+   "x": 26.1,
+   "y": 73.9,
+   "label": "Lobby stairs (south)"
+  },
+  {
+   "id": "elevator2_s",
+   "type": "elevator",
+   "floor": 2,
+   "x": 29.2,
+   "y": 73.9,
+   "label": "Elevator E-1"
+  },
+  {
+   "id": "stairs2_n",
+   "type": "stairs",
+   "floor": 2,
+   "x": 19.2,
+   "y": 3.9,
+   "label": "North stairs"
+  },
+  {
+   "id": "elevator2_n",
+   "type": "elevator",
+   "floor": 2,
+   "x": 16.1,
+   "y": 6.1,
+   "label": "Elevator E-2"
+  },
+  {
+   "id": "restroom2",
+   "type": "restroom",
+   "floor": 2,
+   "x": 26.1,
+   "y": 67.2,
+   "label": "Restrooms"
+  },
+  {
+   "id": "h1_e_1640",
+   "type": "hall",
+   "floor": 1,
+   "x": 21.4,
+   "y": 71.9,
+   "label": "h1_e_1640"
+  },
+  {
+   "id": "h1_e_1520",
+   "type": "hall",
+   "floor": 1,
+   "x": 21.4,
+   "y": 65.3,
+   "label": "h1_e_1520"
+  },
+  {
+   "id": "h1_e_1310",
+   "type": "hall",
+   "floor": 1,
+   "x": 21.4,
+   "y": 53.6,
+   "label": "h1_e_1310"
+  },
+  {
+   "id": "h1_e_1175",
+   "type": "hall",
+   "floor": 1,
+   "x": 20.8,
+   "y": 46.1,
+   "label": "h1_e_1175"
+  },
+  {
+   "id": "h1_e_1080",
+   "type": "hall",
+   "floor": 1,
+   "x": 20.8,
+   "y": 40.8,
+   "label": "h1_e_1080"
+  },
+  {
+   "id": "h1_e_750",
+   "type": "hall",
+   "floor": 1,
+   "x": 20.6,
+   "y": 22.5,
+   "label": "h1_e_750"
+  },
+  {
+   "id": "h1_ne",
+   "type": "hall",
+   "floor": 1,
+   "x": 20.3,
+   "y": 8.9,
+   "label": "h1_ne"
+  },
+  {
+   "id": "h1_s_690",
+   "type": "hall",
+   "floor": 1,
+   "x": 27.8,
+   "y": 71.9,
+   "label": "h1_s_690"
+  },
+  {
+   "id": "h1_s_810",
+   "type": "hall",
+   "floor": 1,
+   "x": 34.4,
+   "y": 71.9,
+   "label": "h1_s_810"
+  },
+  {
+   "id": "h1_s_950",
+   "type": "hall",
+   "floor": 1,
+   "x": 42.2,
+   "y": 71.9,
+   "label": "h1_s_950"
+  },
+  {
+   "id": "h1_s_1130",
+   "type": "hall",
+   "floor": 1,
+   "x": 52.2,
+   "y": 71.9,
+   "label": "h1_s_1130"
+  },
+  {
+   "id": "h1_w_1175",
+   "type": "hall",
+   "floor": 1,
+   "x": 12.2,
+   "y": 46.1,
+   "label": "h1_w_1175"
+  },
+  {
+   "id": "h1_w_1490",
+   "type": "hall",
+   "floor": 1,
+   "x": 12.2,
+   "y": 63.6,
+   "label": "h1_w_1490"
+  },
+  {
+   "id": "h1_w_1600",
+   "type": "hall",
+   "floor": 1,
+   "x": 12.5,
+   "y": 69.7,
+   "label": "h1_w_1600"
+  },
+  {
+   "id": "h1_w_1790",
+   "type": "hall",
+   "floor": 1,
+   "x": 12.8,
+   "y": 80.3,
+   "label": "h1_w_1790"
+  },
+  {
+   "id": "h1_s2_590",
+   "type": "hall",
+   "floor": 1,
+   "x": 22.2,
+   "y": 80.3,
+   "label": "h1_s2_590"
+  },
+  {
+   "id": "stairs1_sw",
+   "type": "stairs",
+   "floor": 1,
+   "x": 7.8,
+   "y": 63.6,
+   "label": "Stair 3 (southwest)"
+  },
+  {
+   "id": "stairs1_s",
+   "type": "stairs",
+   "floor": 1,
+   "x": 26.1,
+   "y": 74.7,
+   "label": "Lobby stairs (south)"
+  },
+  {
+   "id": "elevator1_s",
+   "type": "elevator",
+   "floor": 1,
+   "x": 29.4,
+   "y": 74.7,
+   "label": "Elevator E-1"
+  },
+  {
+   "id": "stairs1_n",
+   "type": "stairs",
+   "floor": 1,
+   "x": 20.6,
+   "y": 4.2,
+   "label": "North stairs"
+  },
+  {
+   "id": "elevator1_n",
+   "type": "elevator",
+   "floor": 1,
+   "x": 16.9,
+   "y": 6.1,
+   "label": "Elevator E-2"
+  },
+  {
+   "id": "restroom1",
+   "type": "restroom",
+   "floor": 1,
+   "x": 25.6,
+   "y": 68.1,
+   "label": "Restrooms"
+  },
+  {
+   "id": "vending1",
+   "type": "landmark",
+   "floor": 1,
+   "x": 27.8,
+   "y": 79.2,
+   "label": "Vending area"
+  },
+  {
+   "id": "Q-207",
+   "type": "room",
+   "floor": 2,
+   "x": 17.4,
+   "y": 64.2,
+   "label": "Q-207"
+  },
+  {
+   "id": "Q-206",
+   "type": "room",
+   "floor": 2,
+   "x": 17.4,
+   "y": 71.7,
+   "label": "Q-206"
+  },
+  {
+   "id": "Q-209",
+   "type": "room",
+   "floor": 2,
+   "x": 27.8,
+   "y": 61.7,
+   "label": "Q-209"
+  },
+  {
+   "id": "Q-211",
+   "type": "room",
+   "floor": 2,
+   "x": 22.8,
+   "y": 56.1,
+   "label": "Q-211"
+  },
+  {
+   "id": "Q-214",
+   "type": "room",
+   "floor": 2,
+   "x": 22.8,
+   "y": 47.8,
+   "label": "Q-214"
+  },
+  {
+   "id": "Q-215",
+   "type": "room",
+   "floor": 2,
+   "x": 22.8,
+   "y": 39.4,
+   "label": "Q-215"
+  },
+  {
+   "id": "Q-216",
+   "type": "room",
+   "floor": 2,
+   "x": 20.6,
+   "y": 39.4,
+   "label": "Q-216"
+  },
+  {
+   "id": "Q-217",
+   "type": "room",
+   "floor": 2,
+   "x": 20.3,
+   "y": 31.1,
+   "label": "Q-217"
+  },
+  {
+   "id": "Q-218",
+   "type": "room",
+   "floor": 2,
+   "x": 22.8,
+   "y": 31.1,
+   "label": "Q-218"
+  },
+  {
+   "id": "Q-219",
+   "type": "room",
+   "floor": 2,
+   "x": 22.8,
+   "y": 22.8,
+   "label": "Q-219"
+  },
+  {
+   "id": "Q-220",
+   "type": "room",
+   "floor": 2,
+   "x": 20.0,
+   "y": 22.8,
+   "label": "Q-220"
+  },
+  {
+   "id": "Q-221",
+   "type": "room",
+   "floor": 2,
+   "x": 19.7,
+   "y": 14.4,
+   "label": "Q-221"
+  },
+  {
+   "id": "Q-222",
+   "type": "room",
+   "floor": 2,
+   "x": 22.8,
+   "y": 14.4,
+   "label": "Q-222"
+  },
+  {
+   "id": "Q-240",
+   "type": "room",
+   "floor": 2,
+   "x": 9.4,
+   "y": 14.4,
+   "label": "Q-240"
+  },
+  {
+   "id": "Q-241",
+   "type": "room",
+   "floor": 2,
+   "x": 9.7,
+   "y": 23.3,
+   "label": "Q-241"
+  },
+  {
+   "id": "Q-242",
+   "type": "room",
+   "floor": 2,
+   "x": 10.3,
+   "y": 31.7,
+   "label": "Q-242"
+  },
+  {
+   "id": "Q-243",
+   "type": "room",
+   "floor": 2,
+   "x": 10.6,
+   "y": 40.0,
+   "label": "Q-243"
+  },
+  {
+   "id": "Q-245",
+   "type": "room",
+   "floor": 2,
+   "x": 10.8,
+   "y": 48.3,
+   "label": "Q-245"
+  },
+  {
+   "id": "Q-246",
+   "type": "room",
+   "floor": 2,
+   "x": 11.1,
+   "y": 56.7,
+   "label": "Q-246"
+  },
+  {
+   "id": "Q-204",
+   "type": "room",
+   "floor": 2,
+   "x": 34.2,
+   "y": 75.0,
+   "label": "Q-204"
+  },
+  {
+   "id": "Q-205",
+   "type": "room",
+   "floor": 2,
+   "x": 32.5,
+   "y": 75.0,
+   "label": "Q-205"
+  },
+  {
+   "id": "Q-202",
+   "type": "room",
+   "floor": 2,
+   "x": 47.2,
+   "y": 76.1,
+   "label": "Q-202"
+  },
+  {
+   "id": "Q-109",
+   "type": "room",
+   "floor": 1,
+   "x": 16.9,
+   "y": 71.4,
+   "label": "Q-109"
+  },
+  {
+   "id": "Q-110",
+   "type": "room",
+   "floor": 1,
+   "x": 20.8,
+   "y": 65.3,
+   "label": "Q-110"
+  },
+  {
+   "id": "Q-107",
+   "type": "room",
+   "floor": 1,
+   "x": 42.2,
+   "y": 72.8,
+   "label": "Q-107"
+  },
+  {
+   "id": "Q-108",
+   "type": "room",
+   "floor": 1,
+   "x": 34.4,
+   "y": 72.8,
+   "label": "Q-108"
+  },
+  {
+   "id": "Q-104",
+   "type": "room",
+   "floor": 1,
+   "x": 43.9,
+   "y": 71.1,
+   "label": "Q-104"
+  },
+  {
+   "id": "Q-105",
+   "type": "room",
+   "floor": 1,
+   "x": 53.3,
+   "y": 71.1,
+   "label": "Q-105"
+  },
+  {
+   "id": "Q-106",
+   "type": "room",
+   "floor": 1,
+   "x": 52.2,
+   "y": 73.1,
+   "label": "Q-106"
+  },
+  {
+   "id": "Q-112",
+   "type": "room",
+   "floor": 1,
+   "x": 27.8,
+   "y": 71.1,
+   "label": "Q-112"
+  },
+  {
+   "id": "Q-114",
+   "type": "room",
+   "floor": 1,
+   "x": 22.2,
+   "y": 59.7,
+   "label": "Q-114"
+  },
+  {
+   "id": "Q-115",
+   "type": "room",
+   "floor": 1,
+   "x": 22.2,
+   "y": 53.6,
+   "label": "Q-115"
+  },
+  {
+   "id": "Q-118",
+   "type": "room",
+   "floor": 1,
+   "x": 21.9,
+   "y": 40.8,
+   "label": "Q-118"
+  },
+  {
+   "id": "Q-121",
+   "type": "room",
+   "floor": 1,
+   "x": 21.7,
+   "y": 22.5,
+   "label": "Q-121"
+  },
+  {
+   "id": "Q-119",
+   "type": "room",
+   "floor": 1,
+   "x": 16.7,
+   "y": 48.1,
+   "label": "Q-119"
+  },
+  {
+   "id": "Q-120",
+   "type": "room",
+   "floor": 1,
+   "x": 18.9,
+   "y": 30.8,
+   "label": "Q-120"
+  },
+  {
+   "id": "Q-122",
+   "type": "room",
+   "floor": 1,
+   "x": 18.6,
+   "y": 14.2,
+   "label": "Q-122"
+  }
+ ],
  "edges": [
-  [ "h1-0", "h1-10" ],
-  [ "h1-10", "h1-15" ],
-  [ "h1-15", "h1-20" ],
-  [ "h1-20", "h1-25" ],
-  [ "h1-25", "h1-30" ],
-  [ "h1-30", "h1-35" ],
-  [ "h1-35", "h1-40" ],
-  [ "h1-40", "h1-45" ],
-  [ "h1-45", "h1-55" ],
-  [ "h1-55", "h1-60" ],
-  [ "Q-101", "h1-10" ],
-  [ "Q-102", "h1-10" ],
-  [ "Q-103", "h1-15" ],
-  [ "Q-104", "h1-15" ],
-  [ "Q-105", "h1-20" ],
-  [ "Q-106", "h1-20" ],
-  [ "Q-107", "h1-25" ],
-  [ "Q-108", "h1-25" ],
-  [ "Q-109", "h1-30" ],
-  [ "Q-110", "h1-30" ],
-  [ "Q-111", "h1-35" ],
-  [ "Q-112", "h1-35" ],
-  [ "Q-113", "h1-40" ],
-  [ "Q-114", "h1-40" ],
-  [ "Q-115", "h1-45" ],
-  [ "stairs-1", "h1-55" ],
-  [ "elevator-1", "h1-60" ],
-  [ "h2-10", "h2-15" ],
-  [ "h2-15", "h2-20" ],
-  [ "h2-20", "h2-25" ],
-  [ "h2-25", "h2-30" ],
-  [ "h2-30", "h2-35" ],
-  [ "h2-35", "h2-40" ],
-  [ "h2-40", "h2-45" ],
-  [ "h2-45", "h2-55" ],
-  [ "h2-55", "h2-60" ],
-  [ "Q-201", "h2-10" ],
-  [ "Q-202", "h2-10" ],
-  [ "Q-203", "h2-15" ],
-  [ "Q-204", "h2-15" ],
-  [ "Q-205", "h2-20" ],
-  [ "Q-206", "h2-20" ],
-  [ "Q-207", "h2-25" ],
-  [ "Q-208", "h2-25" ],
-  [ "Q-209", "h2-30" ],
-  [ "Q-210", "h2-30" ],
-  [ "Q-211", "h2-35" ],
-  [ "Q-212", "h2-35" ],
-  [ "Q-213", "h2-40" ],
-  [ "Q-214", "h2-40" ],
-  [ "Q-215", "h2-45" ],
-  [ "stairs-2", "h2-55" ],
-  [ "elevator-2", "h2-60" ],
-  [ "entrance-1", "h1-0" ],
-  [ "stairs-1", "stairs-2" ],
-  [ "elevator-1", "elevator-2" ] ] }
+  [
+   "entrance",
+   "lobby2"
+  ],
+  [
+   "lobby2",
+   "h2_s_e2"
+  ],
+  [
+   "h2_s_e2",
+   "h2_se"
+  ],
+  [
+   "h2_se",
+   "h2_sw"
+  ],
+  [
+   "lobby2",
+   "h2_s_e2"
+  ],
+  [
+   "h2_s_e2",
+   "h2_s_e3"
+  ],
+  [
+   "h2_se",
+   "h2_e_1600"
+  ],
+  [
+   "h2_e_1600",
+   "h2_e_1505"
+  ],
+  [
+   "h2_e_1505",
+   "h2_e_1360"
+  ],
+  [
+   "h2_e_1360",
+   "h2_e_1165"
+  ],
+  [
+   "h2_e_1165",
+   "h2_e_1060"
+  ],
+  [
+   "h2_e_1060",
+   "h2_e_910"
+  ],
+  [
+   "h2_e_910",
+   "h2_e_760"
+  ],
+  [
+   "h2_e_760",
+   "h2_e_610"
+  ],
+  [
+   "h2_e_610",
+   "h2_ne"
+  ],
+  [
+   "h2_ne",
+   "h2_n_mid"
+  ],
+  [
+   "h2_n_mid",
+   "h2_nw"
+  ],
+  [
+   "h2_sw",
+   "h2_w_1505"
+  ],
+  [
+   "h2_w_1505",
+   "h2_w_1450"
+  ],
+  [
+   "h2_w_1450",
+   "h2_w_1370"
+  ],
+  [
+   "h2_w_1370",
+   "h2_w_1220"
+  ],
+  [
+   "h2_w_1220",
+   "h2_w_1165"
+  ],
+  [
+   "h2_w_1165",
+   "h2_w_1070"
+  ],
+  [
+   "h2_w_1070",
+   "h2_w_920"
+  ],
+  [
+   "h2_w_920",
+   "h2_w_770"
+  ],
+  [
+   "h2_w_770",
+   "h2_w_610"
+  ],
+  [
+   "h2_w_610",
+   "h2_nw"
+  ],
+  [
+   "h2_w_1165",
+   "h2_e_1165"
+  ],
+  [
+   "h2_w_1450",
+   "stairs2_sw"
+  ],
+  [
+   "h2_e_1600",
+   "stairs2_s"
+  ],
+  [
+   "stairs2_s",
+   "h2_s_e2"
+  ],
+  [
+   "stairs2_s",
+   "elevator2_s"
+  ],
+  [
+   "h2_n_mid",
+   "stairs2_n"
+  ],
+  [
+   "h2_n_mid",
+   "elevator2_n"
+  ],
+  [
+   "h2_e_1600",
+   "restroom2"
+  ],
+  [
+   "h1_ne",
+   "h1_e_750"
+  ],
+  [
+   "h1_e_750",
+   "h1_e_1080"
+  ],
+  [
+   "h1_e_1080",
+   "h1_e_1175"
+  ],
+  [
+   "h1_e_1175",
+   "h1_e_1310"
+  ],
+  [
+   "h1_e_1310",
+   "h1_e_1520"
+  ],
+  [
+   "h1_e_1520",
+   "h1_e_1640"
+  ],
+  [
+   "h1_e_1640",
+   "h1_s_690"
+  ],
+  [
+   "h1_s_690",
+   "h1_s_810"
+  ],
+  [
+   "h1_s_810",
+   "h1_s_950"
+  ],
+  [
+   "h1_s_950",
+   "h1_s_1130"
+  ],
+  [
+   "h1_e_1175",
+   "h1_w_1175"
+  ],
+  [
+   "h1_w_1175",
+   "h1_w_1490"
+  ],
+  [
+   "h1_w_1490",
+   "h1_w_1600"
+  ],
+  [
+   "h1_w_1600",
+   "h1_w_1790"
+  ],
+  [
+   "h1_w_1790",
+   "h1_s2_590"
+  ],
+  [
+   "h1_s2_590",
+   "h1_e_1640"
+  ],
+  [
+   "h1_w_1490",
+   "stairs1_sw"
+  ],
+  [
+   "h1_s_690",
+   "stairs1_s"
+  ],
+  [
+   "stairs1_s",
+   "elevator1_s"
+  ],
+  [
+   "h1_ne",
+   "stairs1_n"
+  ],
+  [
+   "h1_ne",
+   "elevator1_n"
+  ],
+  [
+   "h1_e_1640",
+   "restroom1"
+  ],
+  [
+   "stairs1_s",
+   "vending1"
+  ],
+  [
+   "h2_e_1505",
+   "Q-207"
+  ],
+  [
+   "h2_w_1505",
+   "Q-207"
+  ],
+  [
+   "h2_se",
+   "Q-206"
+  ],
+  [
+   "h2_sw",
+   "Q-206"
+  ],
+  [
+   "h2_e_1505",
+   "Q-209"
+  ],
+  [
+   "h2_e_1360",
+   "Q-211"
+  ],
+  [
+   "h2_e_1165",
+   "Q-214"
+  ],
+  [
+   "h2_e_1060",
+   "Q-215"
+  ],
+  [
+   "h2_e_1060",
+   "Q-216"
+  ],
+  [
+   "h2_e_910",
+   "Q-217"
+  ],
+  [
+   "h2_e_910",
+   "Q-218"
+  ],
+  [
+   "h2_e_760",
+   "Q-219"
+  ],
+  [
+   "h2_e_760",
+   "Q-220"
+  ],
+  [
+   "h2_e_610",
+   "Q-221"
+  ],
+  [
+   "h2_e_610",
+   "Q-222"
+  ],
+  [
+   "h2_w_610",
+   "Q-240"
+  ],
+  [
+   "h2_w_770",
+   "Q-241"
+  ],
+  [
+   "h2_w_920",
+   "Q-242"
+  ],
+  [
+   "h2_w_1070",
+   "Q-243"
+  ],
+  [
+   "h2_w_1220",
+   "Q-245"
+  ],
+  [
+   "h2_w_1370",
+   "Q-246"
+  ],
+  [
+   "h2_s_e2",
+   "Q-204"
+  ],
+  [
+   "h2_s_e2",
+   "Q-205"
+  ],
+  [
+   "h2_s_e3",
+   "Q-202"
+  ],
+  [
+   "h1_e_1640",
+   "Q-109"
+  ],
+  [
+   "h1_w_1600",
+   "Q-109"
+  ],
+  [
+   "h1_e_1520",
+   "Q-110"
+  ],
+  [
+   "h1_s_950",
+   "Q-107"
+  ],
+  [
+   "h1_s_810",
+   "Q-108"
+  ],
+  [
+   "h1_s_950",
+   "Q-104"
+  ],
+  [
+   "h1_s_1130",
+   "Q-105"
+  ],
+  [
+   "h1_s_1130",
+   "Q-106"
+  ],
+  [
+   "h1_s_690",
+   "Q-112"
+  ],
+  [
+   "h1_e_1520",
+   "Q-114"
+  ],
+  [
+   "h1_e_1310",
+   "Q-115"
+  ],
+  [
+   "h1_e_1080",
+   "Q-118"
+  ],
+  [
+   "h1_e_750",
+   "Q-121"
+  ],
+  [
+   "h1_e_1175",
+   "Q-119"
+  ],
+  [
+   "h1_e_1080",
+   "Q-120"
+  ],
+  [
+   "h1_e_750",
+   "Q-122"
+  ],
+  [
+   "stairs2_sw",
+   "stairs1_sw"
+  ],
+  [
+   "stairs2_s",
+   "stairs1_s"
+  ],
+  [
+   "stairs2_n",
+   "stairs1_n"
+  ],
+  [
+   "elevator2_s",
+   "elevator1_s"
+  ],
+  [
+   "elevator2_n",
+   "elevator1_n"
+  ]
+ ]
+}

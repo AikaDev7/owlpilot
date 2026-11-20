@@ -1,7 +1,7 @@
-// Shortest walking route inside building Q (DEMO map in data/buildingQ.json), turned into simple steps.
+// Shortest walking route inside building Q (real map in data/buildingQ.json), turned into simple steps.
 import buildingJson from "../data/buildingQ.json";
 
-export type MapNode = { id: string; type: "room" | "hall" | "stairs" | "elevator" | "entrance"; floor: number; x: number; y: number };
+export type MapNode = { id: string; type: "room" | "hall" | "stairs" | "elevator" | "entrance" | "restroom" | "landmark"; label?: string; floor: number; x: number; y: number };
 
 const nodes: MapNode[] = buildingJson.nodes as MapNode[];
 const nodeById = new Map(nodes.map((n) => [n.id, n]));
@@ -86,7 +86,42 @@ export function mapBearing(dir: Dir): number {
 // Angle between real north and the map's +y axis (set from the evacuation plan later)
 export const northOffsetDeg: number = (buildingJson as { northOffsetDeg?: number }).northOffsetDeg ?? 0;
 
-// Steps like "Walk about 20 m", "Turn left", "Take the stairs up to floor 2", "Q-207 is on your right".
+type Seg = { dir: Dir; len: number };
+
+const MERGE_ANGLE = 35; // turns smaller than this (degrees) are not worth a "Turn" step
+const MIN_SEGMENT = 4; // hallway pieces shorter than this (meters) are folded into the next walk
+
+function angleBetween(a: Dir, b: Dir): number {
+  const cos = (a.x * b.x + a.y * b.y) / (Math.hypot(a.x, a.y) * Math.hypot(b.x, b.y));
+  return (Math.acos(Math.max(-1, Math.min(1, cos))) * 180) / Math.PI;
+}
+
+// Cleans the raw hallway pieces of one floor: folds tiny zigzags into the next walk, joins almost-straight pieces
+function simplify(input: Seg[]): Seg[] {
+  const segs = input.map((x) => ({ ...x }));
+  let changed = true;
+  while (changed && segs.length > 1) {
+    changed = false;
+    for (let i = 0; i < segs.length; i++) {
+      if (segs[i].len >= MIN_SEGMENT) continue;
+      if (i < segs.length - 1) segs[i + 1] = { dir: segs[i + 1].dir, len: segs[i + 1].len + segs[i].len }; // fold into the next walk
+      else segs[i - 1] = { dir: segs[i - 1].dir, len: segs[i - 1].len + segs[i].len }; // last piece: fold into the previous one
+      segs.splice(i, 1);
+      changed = true;
+      break;
+    }
+    if (changed) continue;
+    for (let i = 0; i < segs.length - 1; i++) {
+      if (angleBetween(segs[i].dir, segs[i + 1].dir) >= MERGE_ANGLE) continue;
+      segs.splice(i, 2, { dir: { x: segs[i].dir.x + segs[i + 1].dir.x, y: segs[i].dir.y + segs[i + 1].dir.y }, len: segs[i].len + segs[i + 1].len });
+      changed = true;
+      break;
+    }
+  }
+  return segs;
+}
+
+// Steps like "Walk about 25 m down the hallway", "Turn left", "Take the stairs up to floor 2", "Q-207 is on your left".
 // Returns null when there is no route; an empty list when you are already there.
 export function routeGuide(fromId: string, toRoomId: string): GuideStep[] | null {
   if (!nodeById.has(fromId) || !nodeById.has(toRoomId)) return null;
@@ -94,47 +129,48 @@ export function routeGuide(fromId: string, toRoomId: string): GuideStep[] | null
   if (!path) return null;
   const steps: GuideStep[] = [];
   let heading: Dir | null = null; // direction we are facing
-  let walked = 0; // meters walked in the current direction
-  let onNewFloor = false; // just left the stairs/elevator: no "head into the hallway" step
-  const flush = () => {
-    if (walked >= 4) steps.push({ text: `Walk about ${roundTo5(walked)} m`, kind: "walk", meters: roundTo5(walked), dir: heading });
-    walked = 0;
-  };
 
-  for (let i = 0; i < path.length - 1; i++) {
+  let i = 0;
+  while (i < path.length - 1) {
     const a = nodeById.get(path[i])!;
     const b = nodeById.get(path[i + 1])!;
     if (a.floor !== b.floor) {
-      flush();
       steps.push({ text: `Take the ${a.type === "elevator" ? "elevator" : "stairs"} ${b.floor > a.floor ? "up" : "down"} to floor ${b.floor}`, kind: "stairs", meters: 0, dir: null });
       heading = null; // after the stairs we face whatever way the exit points
-      onNewFloor = true;
+      i++;
       continue;
     }
-    const dir = { x: b.x - a.x, y: b.y - a.y };
-    const length = Math.hypot(dir.x, dir.y);
-    const intoRoom = i === path.length - 2 && b.type === "room";
-
-    if (intoRoom) {
-      flush();
-      const s = heading ? side(heading, dir) : null;
-      steps.push({ text: s ? `${b.id} is on your ${s}` : `${b.id} is straight ahead`, kind: "arrive", meters: 0, dir });
-      break;
+    // one run of hallway pieces on this floor
+    const raw: Seg[] = [];
+    let roomDir: Dir | null = null;
+    let roomId = "";
+    while (i < path.length - 1) {
+      const p = nodeById.get(path[i])!;
+      const q = nodeById.get(path[i + 1])!;
+      if (p.floor !== q.floor) break;
+      const dir = { x: q.x - p.x, y: q.y - p.y };
+      if (i === path.length - 2 && q.type === "room") {
+        roomDir = dir;
+        roomId = q.id;
+      } else raw.push({ dir, len: Math.hypot(dir.x, dir.y) });
+      i++;
     }
-    if (heading === null) {
-      if (a.type !== "hall" && !onNewFloor) steps.push({ text: "Head into the main hallway", kind: "turn", meters: 0, dir });
-      heading = dir;
-    } else {
-      const s = side(heading, dir);
-      if (s) {
-        flush();
-        steps.push({ text: `Turn ${s}`, kind: "turn", meters: 0, dir });
-        heading = dir;
+    let first = true;
+    for (const seg of simplify(raw)) {
+      if (heading) {
+        const s = side(heading, seg.dir);
+        if (s) steps.push({ text: `Turn ${s}`, kind: "turn", meters: 0, dir: seg.dir });
       }
+      heading = seg.dir;
+      const meters = roundTo5(seg.len);
+      steps.push({ text: `Walk about ${meters} m${first ? " down the hallway" : ""}`, kind: "walk", meters, dir: seg.dir });
+      first = false;
     }
-    walked += length;
+    if (roomDir) {
+      const s = heading ? side(heading, roomDir) : null;
+      steps.push({ text: s ? `${roomId} is on your ${s}` : `${roomId} is straight ahead`, kind: "arrive", meters: 0, dir: roomDir });
+    }
   }
-  flush();
   return steps;
 }
 
