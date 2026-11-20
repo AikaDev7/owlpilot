@@ -9,6 +9,7 @@ import PrimaryButton from "../components/PrimaryButton";
 import { CourseSwap, courseSwapIdeas, courseSwapLine } from "../logic/advisor";
 import { buildExplainRequest, explainKey } from "../logic/explain";
 import { prereqWarning } from "../logic/prereqs";
+import { backToPreferences, changeCourses } from "../logic/navFlow";
 import { buildSchedules, getNextSchedule, mariettaOnlyCourses, Schedule, ScheduleItem, SchedulerInput, Strategy, swapItem } from "../logic/scheduler";
 import type { RootStackParamList } from "../navigation";
 import { colors, fonts, shadow } from "../theme";
@@ -207,7 +208,7 @@ export default function ResultsScreen({ navigation }: Props) {
   const wantedCourses = input?.preferences.numCourses ?? 0;
   const bestSchedule = schedules.reduce<Schedule | null>((best, s) => (!best || s.items.length > best.items.length ? s : best), null);
   const campusFix =
-    input && bestSchedule && bestSchedule.items.length < wantedCourses && mariettaOnlyCourses(input, bestSchedule.items.map((i) => i.code)).length > 0;
+    input && (bestSchedule?.items.length ?? 0) < wantedCourses && mariettaOnlyCourses(input, bestSchedule?.items.map((i) => i.code) ?? []).length > 0;
   const missingCourses = !!schedule && schedule.items.length < wantedCourses;
   const alternatives = schedule ? schedule.items.map((item, index) => ({ item, index })).filter((x) => x.item.alternative) : [];
 
@@ -383,7 +384,10 @@ export default function ResultsScreen({ navigation }: Props) {
 
         <View style={styles.buttons}>
           {schedule && <PrimaryButton title="Accept Schedule" onPress={accept} fontSize={24} />}
-          <PrimaryButton title="Back to Preferences" variant="outline" onPress={() => navigation.navigate("Preferences")} fontSize={20} />
+          <PrimaryButton title="Back to Preferences" variant="outline" onPress={() => backToPreferences(navigation)} fontSize={20} />
+          <Pressable onPress={() => changeCourses(navigation)}>
+            <Text style={[styles.link, styles.centerLink]}>Change courses</Text>
+          </Pressable>
         </View>
       </ScrollView>
       {toast && (
@@ -409,6 +413,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", marginTop: 4 },
   bullet: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.textDark, marginRight: 8 },
   body: { fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.textGray, flexShrink: 1 },
+  centerLink: { textAlign: "center", fontSize: 15, marginTop: 4 },
   link: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.badgeText, marginTop: 8 },
   tabs: { gap: 8, paddingBottom: 8 },
   tab: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 6, borderWidth: 1, borderColor: colors.inputBorder, backgroundColor: colors.chipGray },

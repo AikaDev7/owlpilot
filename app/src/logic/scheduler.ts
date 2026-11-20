@@ -638,7 +638,16 @@ function solve(input: SchedulerInput): Solved {
     } else if (allItems(course, ctx).length > 0) {
       notes.push(`${course.code}: every section that fits your times is full, and the waitlists are full too.`);
     } else {
-      notes.push(`${course.code} has no section on ${input.campus ?? "your"} campus or online that fits your busy times.`);
+      // Blame busy times only when a section on the chosen campus exists and overlaps them
+      const withoutBusy = { ...ctx, busy: [] };
+      const campusName = input.campus ?? "your";
+      if (allItems(course, withoutBusy).length > 0) {
+        notes.push(`${course.code} has no section on ${campusName} campus or online that fits your busy times.`);
+      } else if (mariettaOnlyCourses(input).includes(course.code)) {
+        notes.push(`${course.code} isn’t offered in person on ${campusName} campus.`);
+      } else {
+        notes.push(`${course.code} isn’t offered on ${campusName} campus or online.`);
+      }
     }
   }
 
