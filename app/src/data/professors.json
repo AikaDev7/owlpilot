@@ -100,6 +100,20 @@
   "rmpUrl": "https://www.ratemyprofessors.com/professor/3057279"
  },
  {
+  "name": "Femi Ojo",
+  "department": "Computer Science",
+  "courses": [
+   "AI 4267",
+   "CS 4306",
+   "CS 4612"
+  ],
+  "rating": 1.5,
+  "difficulty": 3.8,
+  "wouldTakeAgain": 17,
+  "numRatings": 12,
+  "rmpUrl": "https://www.ratemyprofessors.com/professor/2826514"
+ },
+ {
   "name": "Harshitha Nirujogi",
   "department": "Computer Science",
   "courses": [

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { findProfessor } from "../data/sections";
-import { recentReviews } from "../data/reviews";
 import { meetingLines, ScheduleItem } from "../logic/scheduler";
 import { colors, fonts } from "../theme";
 
@@ -10,11 +9,19 @@ type Props = {
   item: ScheduleItem;
   badges: string[]; // e.g. "Best Match", "Suggested"
   variant?: "white" | "yellow"; // yellow = "Worth considering" card
-  expandable?: boolean; // tap to show professor details and reviews
+  expandable?: boolean; // tap to show professor details and the AI summary of reviews
+  summary?: string | null; // AI "What students say" for this professor (null = none yet)
+  summaryLoading?: boolean; // show "Summarizing reviews…" while the AI works
   showRmp?: boolean; // always show the "View on RMP" link (for cards that can't be expanded)
+  waitlistNote?: boolean; // for a waitlisted class in the schedule: show "You’ll be on the waitlist (2/10)…" under the time
   extra?: string; // small line under the card, e.g. the reason an alternative was skipped
   children?: React.ReactNode; // e.g. the "Choose This Option" button
 };
+
+// How many students can be on the waitlist (the larger of the lecture and lab)
+export function waitCapacity(item: ScheduleItem) {
+  return Math.max(item.lecture.waitCapacity, item.lab?.waitCapacity ?? 0);
+}
 
 // First meeting line without the building ("Mon, Wed 10:00 AM–11:15 AM") plus mode and place
 function placeLine(item: ScheduleItem) {
@@ -29,10 +36,9 @@ function timeLines(item: ScheduleItem) {
 }
 
 // Diana's course card: code + title + badges, professor + rating, days/time, mode + place
-export default function CourseCard({ item, badges, variant = "white", expandable = false, showRmp = false, extra, children }: Props) {
+export default function CourseCard({ item, badges, variant = "white", expandable = false, summary = null, summaryLoading = false, waitlistNote = false, showRmp = false, extra, children }: Props) {
   const [open, setOpen] = useState(false);
   const prof = findProfessor(item.professor);
-  const reviews = open ? recentReviews(item.professor) : [];
   const yellow = variant === "yellow";
 
   return (
@@ -48,8 +54,8 @@ export default function CourseCard({ item, badges, variant = "white", expandable
         </View>
         <View style={styles.badges}>
           {badges.map((b) => (
-            <View key={b} style={[styles.badge, b.startsWith("Full") && styles.badgeWarn]}>
-              <Text style={styles.badgeText}>{b}</Text>
+            <View key={b} style={[styles.badge, b.startsWith("Waitlist") && styles.badgeWait]}>
+              <Text style={[styles.badgeText, b.startsWith("Waitlist") && styles.badgeWaitText]}>{b}</Text>
             </View>
           ))}
         </View>
@@ -67,6 +73,11 @@ export default function CourseCard({ item, badges, variant = "white", expandable
               {timeLines(item).map((t, i) => (
                 <Text key={i} style={styles.time}>{t}</Text>
               ))}
+              {waitlistNote && item.waitlist && (
+                <Text style={styles.waitNote}>
+                  You’ll be on the waitlist ({item.waitCount}/{waitCapacity(item)}). Register for a backup section too.
+                </Text>
+              )}
             </View>
           </View>
           <View style={styles.line}>
@@ -95,29 +106,23 @@ export default function CourseCard({ item, badges, variant = "white", expandable
               <Text style={styles.detail}>Rating: {prof.rating.toFixed(1)}/5 ({prof.numRatings} ratings)</Text>
               <Text style={styles.detail}>Difficulty: {prof.difficulty === null ? "n/a" : `${prof.difficulty.toFixed(1)}/5`}</Text>
               <Text style={styles.detail}>Would take again: {prof.wouldTakeAgain === null ? "n/a" : `${prof.wouldTakeAgain}%`}</Text>
-              <Pressable onPress={() => Linking.openURL(prof.rmpUrl)}>
-                <Text style={styles.link}>View on RMP</Text>
-              </Pressable>
             </>
           ) : (
             <Text style={styles.detail}>No ratings yet for this professor.</Text>
           )}
 
-          <Text style={styles.detailTitle}>Recent reviews</Text>
-          {reviews.length === 0 ? (
-            <Text style={styles.detail}>No reviews yet</Text>
-          ) : (
-            reviews.map((r, i) => (
-              <View key={i} style={styles.review}>
-                <Text style={styles.reviewMeta}>{r.date} · {r.course} · Quality {r.quality}/5</Text>
-                <Text style={styles.detail}>{r.text}</Text>
-              </View>
-            ))
+          {(summaryLoading || summary) && (
+            <>
+              <Text style={styles.detailTitle}>What students say</Text>
+              <Text style={summaryLoading ? styles.loading : styles.detail}>{summaryLoading ? "Summarizing reviews…" : summary}</Text>
+            </>
           )}
 
-          <Text style={styles.detailTitle}>What students say</Text>
-          {/* TODO: AI summary of the reviews for this professor (send only this professor's reviews to the server) */}
-          <View style={styles.summaryBox} />
+          {prof && (
+            <Pressable onPress={() => Linking.openURL(prof.rmpUrl)}>
+              <Text style={styles.link}>View on RMP</Text>
+            </Pressable>
+          )}
         </View>
       )}
 
@@ -144,7 +149,9 @@ const styles = StyleSheet.create({
   title: { fontFamily: fonts.bodyMedium, fontSize: 11, lineHeight: 16, color: colors.textMuted },
   badges: { alignItems: "flex-end", gap: 4, maxWidth: 150 },
   badge: { backgroundColor: colors.badgeBg, borderColor: colors.badgeBorder, borderWidth: 0.5, borderRadius: 15, paddingHorizontal: 9 },
-  badgeWarn: { backgroundColor: colors.warningBg, borderColor: colors.error },
+  badgeWait: { backgroundColor: colors.amberBg, borderColor: colors.amberBorder, borderWidth: 1 },
+  badgeWaitText: { fontFamily: fonts.bodyBold, color: colors.amberText },
+  waitNote: { fontFamily: fonts.bodyMedium, fontSize: 11, lineHeight: 16, color: colors.amberText },
   badgeText: { fontFamily: fonts.bodyMedium, fontSize: 10, lineHeight: 18, color: colors.badgeText },
   main: { flexDirection: "row", justifyContent: "space-between", paddingBottom: 8 },
   left: { flex: 1, gap: 8 },
@@ -161,7 +168,5 @@ const styles = StyleSheet.create({
   detailTitle: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.textDark, marginTop: 8 },
   link: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.badgeText, textDecorationLine: "underline", marginTop: 2 },
   linkOutside: { marginBottom: 8 },
-  review: { backgroundColor: colors.lightGray, borderRadius: 8, padding: 8, gap: 2 },
-  reviewMeta: { fontFamily: fonts.bodySemiBold, fontSize: 11, color: colors.textMuted },
-  summaryBox: { minHeight: 24 },
+  loading: { fontFamily: fonts.body, fontSize: 12, lineHeight: 18, color: colors.textMuted, fontStyle: "italic" },
 });

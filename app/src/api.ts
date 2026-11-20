@@ -47,3 +47,53 @@ export async function parsePreferences(input: {
     clearTimeout(timer);
   }
 }
+
+// What the server needs to explain one schedule (see buildExplainRequest in logic/explain.ts)
+export type ExplainClass = {
+  course: string;
+  title: string;
+  professor: string;
+  rating: number | null;
+  difficulty: number | null;
+  wouldTakeAgain: number | null;
+  meets: string[];
+  tags: string[];
+  replaces?: string; // alternatives only: the professor currently in the schedule
+  reason?: string; // alternatives only: why the section was not picked
+};
+
+export type ExplainRequest = {
+  preferences: string[];
+  strategy: string;
+  badges: string[];
+  classes: ExplainClass[];
+  alternatives: ExplainClass[];
+  reviews: Record<string, { course: string; quality: number; difficulty: number; text: string }[]>;
+};
+
+export type Explanation = { why: string; professors: { name: string; summary: string }[]; error?: string };
+
+// Asks Gemini (through our server) why a schedule fits and what students say about each professor.
+// Never throws: on any problem we return an empty explanation plus error "AI unavailable".
+export async function explainSchedule(input: ExplainRequest): Promise<Explanation> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30000);
+  try {
+    const response = await fetch(`${API_URL}/api/explain-schedule`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+      signal: controller.signal,
+    });
+    const data = await response.json();
+    return {
+      why: typeof data.why === "string" ? data.why : "",
+      professors: Array.isArray(data.professors) ? data.professors : [],
+      error: data.error,
+    };
+  } catch {
+    return { why: "", professors: [], error: "AI unavailable" };
+  } finally {
+    clearTimeout(timer);
+  }
+}

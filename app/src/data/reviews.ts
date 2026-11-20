@@ -18,8 +18,8 @@ function dateValue(r: Review) {
   return Number.isNaN(t) ? 0 : t;
 }
 
-// The newest reviews of one professor (any course), newest first
-export function recentReviews(professor: string, count = 2): Review[] {
+// Up to `count` of the newest reviews of one professor (any course), newest first, for the AI summary
+export function reviewsFor(professor: string, count = 5): Review[] {
   return reviews
     .filter((r) => r.professor === professor)
     .sort((a, b) => dateValue(b) - dateValue(a))

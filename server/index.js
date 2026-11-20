@@ -153,8 +153,8 @@ const FALLBACK_MODEL = process.env.GEMINI_FALLBACK_MODEL || "gemini-3.1-flash-li
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// One Gemini call. Returns the parsed rules, or throws an Error with `retryable` set.
-async function callGeminiOnce(model, prompt, timeoutMs) {
+// One Gemini call. Returns clean(parsed JSON), or throws an Error with `retryable` set.
+async function callGeminiOnce(model, prompt, timeoutMs, schema, clean) {
   let response;
   try {
     response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
@@ -162,7 +162,7 @@ async function callGeminiOnce(model, prompt, timeoutMs) {
       headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { responseMimeType: "application/json", responseSchema: PREFERENCES_SCHEMA, temperature: 0.2 },
+        generationConfig: { responseMimeType: "application/json", responseSchema: schema, temperature: 0.2 },
       }),
       signal: AbortSignal.timeout(timeoutMs),
     });
@@ -185,7 +185,7 @@ async function callGeminiOnce(model, prompt, timeoutMs) {
 
   try {
     const data = await response.json();
-    return cleanRules(JSON.parse(data.candidates?.[0]?.content?.parts?.[0]?.text));
+    return clean(JSON.parse(data.candidates?.[0]?.content?.parts?.[0]?.text));
   } catch {
     const e = new Error("bad JSON from Gemini");
     e.retryable = true;
@@ -194,7 +194,7 @@ async function callGeminiOnce(model, prompt, timeoutMs) {
 }
 
 // Main model (up to 3 tries), then the fallback model (up to 3 tries), all inside MAX_TOTAL_MS.
-async function parseWithGemini(prompt) {
+async function parseWithGemini(prompt, schema = PREFERENCES_SCHEMA, clean = cleanRules, label = "parse-preferences") {
   const deadline = Date.now() + MAX_TOTAL_MS;
   const models = MODEL === FALLBACK_MODEL ? [MODEL] : [MODEL, FALLBACK_MODEL];
 
@@ -203,9 +203,9 @@ async function parseWithGemini(prompt) {
       const timeLeft = deadline - Date.now();
       if (timeLeft < 1500) throw new Error("ran out of time");
       try {
-        return await callGeminiOnce(model, prompt, Math.min(ATTEMPT_TIMEOUT_MS, timeLeft));
+        return await callGeminiOnce(model, prompt, Math.min(ATTEMPT_TIMEOUT_MS, timeLeft), schema, clean);
       } catch (err) {
-        console.error(`parse-preferences: ${model} try ${attempt + 1} failed: ${err.message}`);
+        console.error(`${label}: ${model} try ${attempt + 1} failed: ${err.message}`);
         if (!err.retryable) break; // e.g. 400/404: retrying the same model won't help, go to the fallback
         if (attempt < RETRY_DELAYS_MS.length) await sleep(Math.min(RETRY_DELAYS_MS[attempt], Math.max(0, deadline - Date.now() - 1500)));
       }
@@ -246,6 +246,120 @@ app.post("/api/parse-preferences", async (req, res) => {
   } catch (err) {
     console.error("parse-preferences gave up:", err.message); // short message only, never the key; errors are not cached
     res.json({ ...EMPTY_RULES, error: "AI unavailable" });
+  }
+});
+
+// ---------- Schedule explanation ----------
+const NO_REVIEWS = "Not enough reviews yet";
+const EXPLAIN_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    why: { type: "STRING" },
+    professors: {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        properties: { name: { type: "STRING" }, summary: { type: "STRING" } },
+        required: ["name", "summary"],
+      },
+    },
+  },
+  required: ["why", "professors"],
+};
+
+const str = (v, max) => (typeof v === "string" ? v.trim().slice(0, max) : "");
+const list = (v, max) => (Array.isArray(v) ? v.slice(0, max) : []);
+
+// Trim the app's input to a safe size. Reviews are keyed by professor name, max 5 short ones each.
+function cleanExplainInput(body) {
+  const classInfo = (c) => ({
+    course: str(c?.course, 20),
+    title: str(c?.title, 80),
+    professor: str(c?.professor, 80),
+    rating: typeof c?.rating === "number" ? c.rating : null,
+    difficulty: typeof c?.difficulty === "number" ? c.difficulty : null,
+    wouldTakeAgain: typeof c?.wouldTakeAgain === "number" ? c.wouldTakeAgain : null,
+    meets: list(c?.meets, 4).map((m) => str(m, 60)),
+    tags: list(c?.tags, 6).map((t) => str(t, 30)),
+  });
+  const reviews = {};
+  for (const [name, rs] of Object.entries(body.reviews && typeof body.reviews === "object" ? body.reviews : {})) {
+    reviews[str(name, 80)] = list(rs, 5)
+      .filter((r) => r && typeof r.text === "string" && r.text.trim())
+      .map((r) => ({ course: str(r.course, 20), quality: r.quality ?? null, difficulty: r.difficulty ?? null, text: str(r.text, 350) }));
+  }
+  return {
+    preferences: list(body.preferences, 8).map((p) => str(p, 120)),
+    strategy: str(body.strategy, 40),
+    badges: list(body.badges, 4).map((b) => str(b, 60)),
+    classes: list(body.classes, 8).map(classInfo),
+    alternatives: list(body.alternatives, 8).map((a) => ({ ...classInfo(a), replaces: str(a?.replaces, 80), reason: str(a?.reason, 80) })),
+    reviews,
+  };
+}
+
+function buildExplainPrompt(input) {
+  return `You explain a college class schedule to the student who will take it. Use ONLY the facts below.
+
+Student preferences: ${JSON.stringify(input.preferences)}
+Schedule type: "${input.strategy || "custom"}" ${input.badges.length ? `(also: ${JSON.stringify(input.badges)})` : ""}
+
+Classes in this schedule (rating and difficulty out of 5, wouldTakeAgain in %, tags: suggested = added by us, waitlist = section is full, outsidePreferredTime, noRatings):
+${JSON.stringify(input.classes)}
+
+"Upgrade your professor" alternatives (a different section of the same course with a higher-rated professor, "replaces" is the professor currently in the schedule, "reason" is why it was not picked):
+${JSON.stringify(input.alternatives)}
+
+Student reviews per professor (the ONLY source for what students say):
+${JSON.stringify(input.reviews)}
+
+Write:
+- why: 2-3 sentences on why this schedule fits the student, with concrete trade-offs. Name real professors, courses, ratings, days or times from the data. Example: "Dinadayalane is rated higher for CS 4306, but her open section overlaps with AI 4732, so you could join the waitlist for her other section." Never invent facts.
+- professors: one entry for EVERY professor in the classes AND in the alternatives (use the exact name given). summary = 1-2 balanced sentences on what students say (teaching style, workload, exams, grading), based ONLY on that professor's reviews above. Mention both positives and negatives fairly, in a calm tone, no insults and no quoting harsh wording. If a professor has no reviews, the summary must be exactly "${NO_REVIEWS}".`;
+}
+
+// Keep a summary for every expected professor; no reviews always means the fixed text.
+function cleanExplanation(raw, input) {
+  const names = new Set();
+  [...input.classes, ...input.alternatives].forEach((c) => c.professor && names.add(c.professor));
+  const given = new Map();
+  for (const p of list(raw?.professors, 30)) {
+    if (p && typeof p.name === "string" && typeof p.summary === "string" && p.summary.trim()) given.set(p.name.trim(), p.summary.trim());
+  }
+  const professors = [...names].map((name) => ({
+    name,
+    summary: (input.reviews[name] || []).length === 0 ? NO_REVIEWS : given.get(name) || NO_REVIEWS,
+  }));
+  const why = typeof raw?.why === "string" ? raw.why.trim() : "";
+  if (!why) throw Object.assign(new Error("empty explanation"), { retryable: true });
+  return { why, professors };
+}
+
+const explainCache = new Map();
+
+// Body: { preferences, strategy, badges, classes, alternatives, reviews }
+// Reply: { why, professors: [{ name, summary }] }  (or { why: "", professors: [], error: "AI unavailable" })
+app.post("/api/explain-schedule", async (req, res) => {
+  const input = cleanExplainInput(req.body || {});
+  const failure = { why: "", professors: [], error: "AI unavailable" };
+  if (input.classes.length === 0) return res.json(failure);
+
+  const cacheKey = JSON.stringify(input);
+  if (explainCache.has(cacheKey)) return res.json(explainCache.get(cacheKey));
+
+  if (!process.env.GEMINI_API_KEY) {
+    console.error("explain-schedule: GEMINI_API_KEY is not set");
+    return res.json(failure);
+  }
+
+  try {
+    const result = await parseWithGemini(buildExplainPrompt(input), EXPLAIN_SCHEMA, (raw) => cleanExplanation(raw, input), "explain-schedule");
+    if (explainCache.size >= CACHE_LIMIT) explainCache.delete(explainCache.keys().next().value);
+    explainCache.set(cacheKey, result);
+    res.json(result);
+  } catch (err) {
+    console.error("explain-schedule gave up:", err.message);
+    res.json(failure);
   }
 });
 

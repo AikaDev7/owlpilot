@@ -1,5 +1,185 @@
 [
  {
+  "professor": "Alan Shaw",
+  "course": "CS 4722",
+  "source": "RMP",
+  "date": "Dec 8th, 2024",
+  "quality": 5.0,
+  "difficulty": 1.0,
+  "text": "Amazing professor. Fun class. He holds your hand through the labs. He helps after class if you are struggling. Enjoys what he does. I loved working on some of the projects. I even did the extra credit because it was interesting."
+ },
+ {
+  "professor": "Alan Shaw",
+  "course": "CS 4722",
+  "source": "RMP",
+  "date": "Dec 21st, 2023",
+  "quality": 3.0,
+  "difficulty": 3.0,
+  "text": "Professor Shaw does a decent job with lectures, but his assignments aren't the most helpful for learning despite being the majority of the work you do for the class. They are instructions on where to copy-paste his code, so you don't really learn it for yourself. Other than that he is a nice…"
+ },
+ {
+  "professor": "Alan Shaw",
+  "course": "CS 4722",
+  "source": "RMP",
+  "date": "Jul 30th, 2023",
+  "quality": 2.0,
+  "difficulty": 3.0,
+  "text": "Not a bad professor. But he is very strict when it comes to grading. I feel as if he could have given some more points on some of my assignments. For example I was missing a texture on one of my assignments and got a 37/50 just for that little error its a 74?! Idk its a good course but I just…"
+ },
+ {
+  "professor": "Alan Shaw",
+  "course": "CS 4722",
+  "source": "RMP",
+  "date": "Jul 26th, 2023",
+  "quality": 5.0,
+  "difficulty": 3.0,
+  "text": "Quizzes are open note and he provides everything you need in his slides. Assignments are straightforward and he posts helper videos for most of the assignments. You will pass if you put in some effort. Don't let anyone cheat though, he gets worse at grading on time and grading fairly if someone…"
+ },
+ {
+  "professor": "Alan Shaw",
+  "course": "CS 4722",
+  "source": "RMP",
+  "date": "Jul 24th, 2023",
+  "quality": 4.0,
+  "difficulty": 4.0,
+  "text": "Prof. Shaw is a great teacher, but he is very strict and is a tough grader. Be sure to follow all instructions carefully, and follow his guidance videos when you need to."
+ },
+ {
+  "professor": "Ben Setzer",
+  "course": "CS 4722",
+  "source": "RMP",
+  "date": "Oct 15th, 2022",
+  "quality": 5.0,
+  "difficulty": 2.0,
+  "text": "Strongly recommend to start assignments early. His wording on assignments can be awkward. If you're stuck, do email him. He provides good feedback. The assignments, are not difficult in that he provides a lot of the code and you add to it. Personally, I learned from his example codes and seeing…"
+ },
+ {
+  "professor": "Ben Setzer",
+  "course": "CS 4722",
+  "source": "RMP",
+  "date": "May 7th, 2022",
+  "quality": 4.0,
+  "difficulty": 3.0,
+  "text": "For most of the assignments he gives you most of the code and gives you instructions on how the file code should look like. Always gives feedback on everything so you know what you need to work on. Overall great class."
+ },
+ {
+  "professor": "Ben Setzer",
+  "course": "CS 4722",
+  "source": "RMP",
+  "date": "Jun 7th, 2021",
+  "quality": 1.0,
+  "difficulty": 5.0,
+  "text": "CS 4722, The Book differ his lecture, the methodologist of the book and the methodologist of his website are different so that you have a problem for learning, unprofessional structure of his own web that is set off the university website, his examples of code are imprecise, tangles, messes,…"
+ },
+ {
+  "professor": "Ben Setzer",
+  "course": "CS 4720",
+  "source": "RMP",
+  "date": "Dec 19th, 2019",
+  "quality": 4.0,
+  "difficulty": 3.0,
+  "text": "Has his own website that he goes by, which contains all of his assignments. The assignments are 50% of your grade so its best to manage your time wisely and not wait until the last minute. Tests are super easy if you know the assignments. Emails back in about two business days. You can pass this…"
+ },
+ {
+  "professor": "Ben Setzer",
+  "course": "CS 4720",
+  "source": "RMP",
+  "date": "Dec 10th, 2019",
+  "quality": 3.0,
+  "difficulty": 4.0,
+  "text": "He doesn't use the school resources for the online material, and opts to use his own site instead. All his own material, examples, references, etc. This feels amateurish and awkward then for a college course, and like I'm paying for a youtube guru or something. This same class even covers diff.…"
+ },
+ {
+  "professor": "Coskun Cetinkaya",
+  "course": "CS 3622",
+  "source": "RMP",
+  "date": "May 14th, 2026",
+  "quality": 5.0,
+  "difficulty": 2.0,
+  "text": "Was an easy professor. There was weekly quizzes on lockdown browser. Exams were simple and had a study guide. If you know the study guide well, the exams were a free A. Project at the end of the semester was very easy."
+ },
+ {
+  "professor": "Coskun Cetinkaya",
+  "course": "CS 3622",
+  "source": "RMP",
+  "date": "Apr 24th, 2026",
+  "quality": 4.0,
+  "difficulty": 3.0,
+  "text": "His exams all had study guides, and looked super similar so as long as you STUDY that you'll be just fine. He also has videos going over the study guide but if you're taking it online it was hard to hear and read the handwriting so its more of learning on your own.quizzes were easy and…"
+ },
+ {
+  "professor": "Coskun Cetinkaya",
+  "course": "CS 3622",
+  "source": "RMP",
+  "date": "Apr 1st, 2026",
+  "quality": 3.0,
+  "difficulty": 4.0,
+  "text": "Dr Cetinkaya provides slides and video lectures for students to use. Be SURE to watch those lectures or things will be confusing. Use the caption feature build in windows to help. He does NOT provide feedback on homework or quizzes, but post homework solutions after due dates. There is a final…"
+ },
+ {
+  "professor": "Coskun Cetinkaya",
+  "course": "CS 3622",
+  "source": "RMP",
+  "date": "May 1st, 2025",
+  "quality": 5.0,
+  "difficulty": 2.0,
+  "text": "Honestly, really easy and enjoyable course. Very easy project, exams are basically just math, homework is a completion grade. The only somewhat hard thing were the chapter quizzes, but almost all the stuff was in the powerpoints."
+ },
+ {
+  "professor": "Coskun Cetinkaya",
+  "course": "CS 3622",
+  "source": "RMP",
+  "date": "May 1st, 2025",
+  "quality": 1.0,
+  "difficulty": 5.0,
+  "text": "As far as I am concerned, he was the worst professor I have ever had. His grading criteria were so poor, he lacked many communication skills, and his teaching style was so weak, he just read through the slides and did not even attempt to explain them properly. Do not take this professor!"
+ },
+ {
+  "professor": "Femi Ojo",
+  "course": "CS 4306",
+  "source": "RMP",
+  "date": "Dec 30th, 2025",
+  "quality": 1.0,
+  "difficulty": 3.0,
+  "text": "During a group presentation he was watching a Chris Fix it Youtube video (At one point accidentally playing it aloud interrupting us presenting.) Outside of that experience the class really wasn't bad, material choice was fitting, assignments and tests were reasonable exercises."
+ },
+ {
+  "professor": "Femi Ojo",
+  "course": "CS 4306",
+  "source": "RMP",
+  "date": "May 5th, 2025",
+  "quality": 1.0,
+  "difficulty": 4.0,
+  "text": "His lectures are very chaotic and often he doesn't have the time he wants to finish the lectures. He also taught us some of the algorithms incorrectly and we had to correct him a few times on quizzes or assignments. He also is bad at preparing us for our tests and just throws a whole list of…"
+ },
+ {
+  "professor": "Femi Ojo",
+  "course": "CS 4306",
+  "source": "RMP",
+  "date": "Dec 21st, 2023",
+  "quality": 1.0,
+  "difficulty": 4.0,
+  "text": "This professor is one of the worst I've taken in my degree. His lectures are not very helpful because he only reads off the PowerPoint slides and is hard to understand. He also only covers each concept once in class and expects you to memorize it. To top it off he is very disrespectful to…"
+ },
+ {
+  "professor": "Femi Ojo",
+  "course": "CS 4306",
+  "source": "RMP",
+  "date": "Dec 10th, 2023",
+  "quality": 1.0,
+  "difficulty": 5.0,
+  "text": "Worst professor ive had in my degree so far. Deserves to be fired. Thinks hes right even though the whole class points out his mistakes multiple times. The ONLY resources are his awful 30 minute lectures, and NOTHING else. No other ways to study for his awful, horribly worded tests and quizzes.…"
+ },
+ {
+  "professor": "Femi Ojo",
+  "course": null,
+  "source": "RMP",
+  "date": "Dec 10th, 2023",
+  "quality": 1.0,
+  "difficulty": 5.0,
+  "text": "Im not going to waste yall time. If u want to actually learn dont take him . If u want to actually pass aslso dont take him. Basically dont take him at all costs bro is the worst prof I have had in my entire life of school and im not even exaggerating. He doesnt answer emails and his the hardest…"
+ },
+ {
   "professor": "Hisham Haddad",
   "course": "CS 3305",
   "source": "RMP",
@@ -88,6 +268,51 @@
   "quality": 5.0,
   "difficulty": 1.0,
   "text": "Took him for SWE 3623, best class I took this semester. He provides great information and lectures, and gives great feedback. One of the most straight-to-the-point and smooth classes I have ever taken. Take his class before it's full."
+ },
+ {
+  "professor": "Jyothsna Dinadayalane",
+  "course": "CS 4306",
+  "source": "RMP",
+  "date": "Jun 12th, 2026",
+  "quality": 5.0,
+  "difficulty": 3.0,
+  "text": "Really not that bad of a class. A lot of powerpoints and lecture videos in case you are stuck on something. Not much more to say, really recommend"
+ },
+ {
+  "professor": "Jyothsna Dinadayalane",
+  "course": "CS 4306",
+  "source": "RMP",
+  "date": "Dec 16th, 2025",
+  "quality": 3.0,
+  "difficulty": 1.0,
+  "text": "I did not learn from JD's teaching style very well and had to learn a lot on my own. You have to be very focused to find value in her lectures. Another problem is she makes the class too easy to the point that not much learn is required. Take another professor if you want to learn the most."
+ },
+ {
+  "professor": "Jyothsna Dinadayalane",
+  "course": "CS 4306",
+  "source": "RMP",
+  "date": "Nov 6th, 2025",
+  "quality": 5.0,
+  "difficulty": 4.0,
+  "text": "Overall Amazing professor. She does a great job at teaching while also reducing the stress for that specific class. A lot of the assignments were very difficult and required reviewing the assignments, but if you do this, you will be well-prepared for exams. I took her for Data Mining and learned…"
+ },
+ {
+  "professor": "Jyothsna Dinadayalane",
+  "course": "CS 4306",
+  "source": "RMP",
+  "date": "Dec 7th, 2024",
+  "quality": 3.0,
+  "difficulty": 1.0,
+  "text": "Alg Analysis. Very easy class, much easier than Haddad. Easily got a 98.5. Lax grading and assignments are laughably easy. Midterm and Final were both take-home. Quizzes about once a week about presentations from other students in class. Hardest part of this class was waking up in the morning to…"
+ },
+ {
+  "professor": "Jyothsna Dinadayalane",
+  "course": "CS 4412",
+  "source": "RMP",
+  "date": "Dec 20th, 2025",
+  "quality": 5.0,
+  "difficulty": 2.0,
+  "text": "Really enjoyed this. Made me enjoy Data Mining a lot more than I expected coming in. Kind of expecting her to change the class slightly moving forward but I would still highly recommend!"
  },
  {
   "professor": "Lingyan Wang",

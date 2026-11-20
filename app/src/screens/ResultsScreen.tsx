@@ -1,11 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useProfile } from "../context/ProfileContext";
-import { parsePreferences } from "../api";
-import CourseCard from "../components/CourseCard";
+import { Explanation, explainSchedule, parsePreferences } from "../api";
+import CourseCard, { waitCapacity } from "../components/CourseCard";
 import PrimaryButton from "../components/PrimaryButton";
+import { buildExplainRequest, explainKey } from "../logic/explain";
 import { buildSchedules, getNextSchedule, Schedule, ScheduleItem, SchedulerInput, Strategy, swapItem } from "../logic/scheduler";
 import type { RootStackParamList } from "../navigation";
 import { colors, fonts, shadow } from "../theme";
@@ -16,7 +17,7 @@ function badgesFor(item: ScheduleItem, bestCode: string | null) {
   const badges: string[] = [];
   if (item.code === bestCode) badges.push("Best Match");
   if (item.suggested) badges.push("Suggested");
-  if (item.waitlist) badges.push(`Full · Waitlist ${item.waitCount}/${Math.max(item.lecture.waitCapacity, item.lab?.waitCapacity ?? 0)}`);
+  if (item.waitlist) badges.push("Waitlist");
   if (item.tags.includes("outsidePreferredTime")) badges.push("Outside your preferred time");
   if (item.tags.includes("noRatings")) badges.push("No ratings");
   return badges;
@@ -41,10 +42,9 @@ function tabLabel(schedule: Schedule, index: number) {
 function comparisonLine(current: ScheduleItem, alt: ScheduleItem, reason: string) {
   const lastName = current.professor.split(" ").pop();
   const was = current.rating === null ? "no ratings" : `${current.rating.toFixed(1)}★`;
-  let why = "Outside your preferred time";
-  if (reason === "online") why = "Online class";
-  else if (reason.startsWith("full, waitlist")) why = `Section full, you’ll join the waitlist (${reason.replace("full, waitlist ", "")})`;
-  return `${(alt.rating ?? 0).toFixed(1)}★ vs ${was} (${lastName}) · ${why}`;
+  const ratings = `${(alt.rating ?? 0).toFixed(1)}★ vs ${was} (${lastName})`;
+  if (reason.startsWith("full, waitlist")) return ratings; // the amber waitlist pill says the rest
+  return `${ratings} · ${reason === "online" ? "Online class" : "Outside your preferred time"}`;
 }
 
 export default function ResultsScreen({ navigation }: Props) {
@@ -76,6 +76,23 @@ export default function ResultsScreen({ navigation }: Props) {
   }
 
   const schedule: Schedule | undefined = schedules[selected];
+
+  // AI explanation per schedule: asked once when its tab is first opened, and again after a swap (new schedule = new key)
+  const [explanations, setExplanations] = useState<Record<string, Explanation | "loading">>({});
+  const asked = useRef(new Set<string>());
+  const key = schedule ? explainKey(schedule, summary) : "";
+  useEffect(() => {
+    if (!schedule || !profile.preferences || asked.current.has(key)) return;
+    asked.current.add(key);
+    setExplanations((prev) => ({ ...prev, [key]: "loading" }));
+    explainSchedule(buildExplainRequest(schedule, profile.preferences, summary)).then((result) => {
+      setExplanations((prev) => ({ ...prev, [key]: result }));
+    });
+  }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+  const explanation = explanations[key];
+  const explainLoading = explanation === "loading";
+  const explained = explanation && explanation !== "loading" && !explanation.error && explanation.why ? explanation : null;
+  const summaryFor = (name: string) => explained?.professors.find((p) => p.name === name)?.summary ?? null;
   const bestCode = schedule ? bestMatchCode(schedule) : null;
 
   async function tryAgain() {
@@ -106,7 +123,7 @@ export default function ResultsScreen({ navigation }: Props) {
   }
 
   function showToast(alt: ScheduleItem) {
-    setToast(`Swapped ${alt.code} to ${alt.professor}`);
+    setToast(`Swapped ${alt.code} to ${alt.professor}${alt.waitlist ? " (waitlist)" : ""}`);
     setTimeout(() => setToast(null), 2500);
   }
 
@@ -151,6 +168,7 @@ export default function ResultsScreen({ navigation }: Props) {
     navigation.navigate("Home");
   }
 
+  const waitlisted = schedule ? schedule.items.filter((i) => i.waitlist).length : 0;
   const alternatives = schedule ? schedule.items.map((item, index) => ({ item, index })).filter((x) => x.item.alternative) : [];
 
   return (
@@ -225,6 +243,11 @@ export default function ResultsScreen({ navigation }: Props) {
               </View>
             )}
             {schedule.onlineNote && <Text style={styles.highlight}>{schedule.onlineNote}</Text>}
+            {waitlisted > 0 && (
+              <Text style={styles.waitLine}>
+                {waitlisted === 1 ? "1 class in this schedule is waitlisted" : `${waitlisted} classes in this schedule are waitlisted`}
+              </Text>
+            )}
 
             <View style={styles.statsRow}>
               <Text style={styles.stat}>★ {schedule.avgRating.toFixed(1)} avg rating</Text>
@@ -233,17 +256,18 @@ export default function ResultsScreen({ navigation }: Props) {
             </View>
 
             {schedule.items.map((item) => (
-              <CourseCard key={item.code} item={item} badges={badgesFor(item, bestCode)} expandable />
+              <CourseCard key={item.code} item={item} badges={badgesFor(item, bestCode)} expandable waitlistNote summary={summaryFor(item.professor)} summaryLoading={explainLoading} />
             ))}
             {initial?.notes.map((note, i) => (
               <Text key={i} style={styles.note}>{note}</Text>
             ))}
 
-            <View style={styles.why}>
-              <Text style={styles.whyTitle}>Why this schedule?</Text>
-              {/* TODO: AI explanation of why this schedule is a good fit (next step: server endpoint + api.ts wrapper) */}
-              <Text style={styles.body}>Explanation coming soon.</Text>
-            </View>
+            {(explainLoading || explained) && (
+              <View style={styles.why}>
+                <Text style={styles.whyTitle}>Why this schedule?</Text>
+                <Text style={styles.body}>{explained ? explained.why : "Thinking about your schedule…"}</Text>
+              </View>
+            )}
 
             {alternatives.length > 0 && (
               <>
@@ -252,7 +276,11 @@ export default function ResultsScreen({ navigation }: Props) {
                 {alternatives.map(({ item, index }) => {
                   const alt = item.alternative!;
                   return (
-                    <CourseCard key={item.code} item={alt.item} badges={["High Rated"]} variant="yellow" showRmp extra={comparisonLine(item, alt.item, alt.reason)}>
+                    <CourseCard key={item.code} item={alt.item} badges={[...(alt.item.waitlist ? [`Waitlist · ${alt.item.waitCount} of ${waitCapacity(alt.item)} spots taken`] : []), "High Rated"]} variant="yellow" showRmp extra={comparisonLine(item, alt.item, alt.reason)}>
+                      {(explainLoading || summaryFor(alt.item.professor)) && (
+                        <Text style={styles.altSummary}>{explainLoading ? "Summarizing reviews…" : summaryFor(alt.item.professor)}</Text>
+                      )}
+                      {alt.item.waitlist && <Text style={styles.waitLine}>You’d join the waitlist. A seat isn’t guaranteed.</Text>}
                       {swapError?.code === alt.item.code && <Text style={styles.error}>{swapError.message}</Text>}
                       <Pressable onPress={() => choose(index, alt.item)} style={styles.choose}>
                         <Text style={styles.chooseText}>Swap into my schedule</Text>
@@ -315,6 +343,8 @@ const styles = StyleSheet.create({
   sectionTitle: { fontFamily: fonts.title, fontSize: 19, lineHeight: 27, color: colors.textDark },
   sectionSub: { fontFamily: fonts.body, fontSize: 12, lineHeight: 21, color: colors.textGray, marginBottom: 8 },
   error: { fontFamily: fonts.bodyMedium, fontSize: 12, color: colors.error, marginBottom: 8 },
+  waitLine: { fontFamily: fonts.bodySemiBold, fontSize: 12, lineHeight: 18, color: colors.amberText, marginTop: 4, marginBottom: 8 },
+  altSummary: { fontFamily: fonts.body, fontSize: 12, lineHeight: 18, color: colors.textGray, marginBottom: 8 },
   choose: { backgroundColor: colors.white, borderWidth: 1, borderColor: colors.cardDivider, borderRadius: 17, paddingVertical: 5, alignItems: "center", marginBottom: 8, ...shadow, shadowOpacity: 0.15 },
   chooseText: { fontFamily: fonts.titleRegular, fontSize: 14, lineHeight: 24, color: colors.dropdownText },
   buttons: { gap: 16, marginTop: 8, paddingHorizontal: 25 },

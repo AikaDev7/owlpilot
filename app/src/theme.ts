@@ -34,6 +34,9 @@ export const colors = {
   cardTitle: "#232323", // time card title when selected
   cardSubtext: "#494949", // time card small range
   cardSubtextSelected: "#383838",
+  amberBg: "#FFF1D6", // waitlist pills and badges
+  amberBorder: "#F5A623",
+  amberText: "#8A5300",
   warningBg: "#FDE3E3", // "Full, waitlist" badge background
   cardBorder: "#D0D0D0", // course card border
   cardDivider: "#D2D2D2", // line under the course title
