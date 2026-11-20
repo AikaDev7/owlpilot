@@ -19,7 +19,7 @@ export type SchedulerInput = Pick<Profile, "major" | "year" | "takenCourses" | "
 };
 
 // One meeting of one day, in minutes after midnight
-export type Block = { code: string; day: string; start: number; end: number; inPerson: boolean };
+type Block = { code: string; day: string; start: number; end: number; inPerson: boolean };
 
 // One course in a schedule: the lecture section, plus its lab section if the course has a lab
 export type ScheduleItem = {
@@ -42,9 +42,9 @@ export type ScheduleItem = {
 };
 
 // "noRatings": the professor has no ratings. "outsidePreferredTime": a class is outside the chosen time chips.
-export type ItemTag = "noRatings" | "outsidePreferredTime";
+type ItemTag = "noRatings" | "outsidePreferredTime";
 
-export type Alternative = {
+type Alternative = {
   item: ScheduleItem; // same course, a different section (and its lab); alternative is always null here
   reason: string; // "full, waitlist 3/20", "outside your preferred time" or "online"
 };
@@ -65,7 +65,7 @@ export type Schedule = {
   daysOnCampus: number;
 };
 
-export type SchedulerResult = {
+type SchedulerResult = {
   schedules: Schedule[]; // one per strategy, in the order best, professors, fewestDays (up to 3)
   notes: string[]; // e.g. a course that could not fit
 };
@@ -176,7 +176,7 @@ function matchesInterest(course: Course, interests: string[]) {
 
 // ---------- Scoring ----------
 
-export type Context = {
+type Context = {
   prefs: Preferences;
   busy: Busy[];
   softRules: AiRules["softRules"];
@@ -610,7 +610,7 @@ type Solved = { found: Found[]; ctx: Context; selected: { code: string; title: s
 
 // Finds all complete schedules (best first). Tries a small set of options per course, then a wider one.
 function solve(input: SchedulerInput): Solved {
-  const { preferences: prefs, aiRules } = input;
+  const { preferences: prefs } = input;
   const notes: string[] = [];
 
   const ctx = makeContext(input);

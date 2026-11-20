@@ -1,7 +1,7 @@
 // Typed access to reviews.json (student reviews from RateMyProfessors).
 import reviewsJson from "./reviews.json";
 
-export type Review = {
+type Review = {
   professor: string;
   course: string;
   source: string;

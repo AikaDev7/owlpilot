@@ -2,7 +2,7 @@
 import degreePlan from "../data/degreePlan.json";
 import { normCode } from "./scheduler";
 
-export type PlanCourse = { code: string; title: string; prerequisites: (string | string[])[] }; // inner array = OR
+type PlanCourse = { code: string; title: string; prerequisites: (string | string[])[] }; // inner array = OR
 
 export const planCourses = degreePlan.courses as PlanCourse[];
 

@@ -2,7 +2,7 @@ import { Course, findCourse } from "../data/courses";
 import { getDegreePlan, hasOwnPlan } from "../mock/degreePlans";
 import { Profile } from "../context/ProfileContext";
 
-export type Recommendation = { course: Course; reason: string };
+type Recommendation = { course: Course; reason: string };
 
 // Which course levels fit each year (Freshman 1000, Sophomore 1000-2000, ...)
 const levelsForYear: Record<string, number[]> = {

@@ -75,7 +75,7 @@ const roundTo5 = (ft: number) => Math.max(5, Math.round(ft / 5) * 5);
 // One walking step is about 0.75 m (2.5 ft)
 export const METERS_PER_STEP_EST = 0.75;
 export const stepsForMeters = (m: number) => Math.max(1, Math.round(m / METERS_PER_STEP_EST));
-export const feetToMeters = (ft: number) => ft / FEET_PER_METER;
+const feetToMeters = (ft: number) => ft / FEET_PER_METER;
 
 export type GuideStep = {
   text: string;
@@ -89,9 +89,6 @@ export type GuideStep = {
 export function mapBearing(dir: Dir): number {
   return (Math.atan2(dir.x, -dir.y) * 180) / Math.PI;
 }
-
-// Angle between real north and the map's +y axis (set from the evacuation plan later)
-export const northOffsetDeg: number = (buildingJson as { northOffsetDeg?: number }).northOffsetDeg ?? 0;
 
 type Seg = { dir: Dir; len: number };
 
@@ -177,8 +174,4 @@ export function routeGuide(fromId: string, toRoomId: string): GuideStep[] | null
     }
   }
   return steps;
-}
-
-export function routeSteps(fromId: string, toRoomId: string): string[] | null {
-  return routeGuide(fromId, toRoomId)?.map((s) => s.text) ?? null;
 }

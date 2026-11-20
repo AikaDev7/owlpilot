@@ -1,7 +1,7 @@
 // The Home screen asks this file for "now". In demo mode the time is fixed
 // (Tuesday 2:00 PM) so "Up Next" always shows a class during the demo.
 // Set DEMO_MODE to false to use the real clock.
-export const DEMO_MODE = true;
+const DEMO_MODE = true;
 
 export const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 

@@ -2,7 +2,7 @@
 import sectionsJson from "./sections.json";
 import professorsJson from "./professors.json";
 
-export type Meeting = {
+type Meeting = {
   days: string[]; // "Mon".."Fri"
   start: string; // "HH:MM" 24-hour
   end: string;

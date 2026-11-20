@@ -21,7 +21,7 @@ export function timeLines(s: Section): string[] {
   return s.meetings.map((m) => `${m.days.join(", ")} · ${formatTime(minutes(m.start))} - ${formatTime(minutes(m.end))}`);
 }
 
-export type Place = { building: string; buildingName: string; room: string };
+type Place = { building: string; buildingName: string; room: string };
 
 // First in-person place of the item (lecture first, then lab), or null for online classes
 export function placeOf(item: ScheduleItem): Place | null {

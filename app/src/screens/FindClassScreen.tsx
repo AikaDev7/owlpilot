@@ -1,4 +1,3 @@
-import { buildingFullName } from "../data/sections";
 import { useEffect, useRef, useState } from "react";
 import { FlatList, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
@@ -15,7 +14,7 @@ import { findNode, GuideStep, hasIndoorMap, mapBearing, mapRooms, MapNode, MAPPE
 import { METERS_PER_STEP, useHeading, useStepCount } from "../logic/useGuidance";
 import { openBuildingInMaps } from "../logic/maps";
 import { startsText } from "../logic/classTiming";
-import { colors, fonts, shadow } from "../theme";
+import { colors, fonts } from "../theme";
 
 // Where the student is, found from a photo or picked by hand
 type Located = { nodeId: string; label: string };
@@ -41,7 +40,6 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
   const { profile } = useProfile();
   const targetId = building && room ? `${building}-${room}` : "";
   const mapped = hasIndoorMap(building);
-  const targetLabel = `${buildingFullName(building, buildingName || MAPPED_BUILDINGS[building] || "")} · Room ${room}`;
   const findBuilding = () => openBuildingInMaps(buildingName || MAPPED_BUILDINGS[building] || building);
 
   const [permission, requestPermission] = useCameraPermissions();
