@@ -15,6 +15,9 @@ import PreferencesScreen from "./src/screens/PreferencesScreen";
 import BuildingScreen from "./src/screens/BuildingScreen";
 import ResultsScreen from "./src/screens/ResultsScreen";
 import HomeScreen from "./src/screens/HomeScreen";
+import CalendarScreen from "./src/screens/CalendarScreen";
+import ProfileScreen from "./src/screens/ProfileScreen";
+import FindClassScreen from "./src/screens/FindClassScreen";
 
 // Keep the native splash visible until the fonts are ready
 SplashScreen.preventAutoHideAsync();
@@ -49,7 +52,10 @@ export default function App() {
         <Stack.Screen name="Preferences" component={PreferencesScreen} />
         <Stack.Screen name="Building" component={BuildingScreen} />
         <Stack.Screen name="Results" component={ResultsScreen} />
-        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Home" component={HomeScreen} options={{ animation: "none" }} />
+        <Stack.Screen name="Calendar" component={CalendarScreen} options={{ animation: "none" }} />
+        <Stack.Screen name="Profile" component={ProfileScreen} options={{ animation: "none" }} />
+        <Stack.Screen name="FindClass" component={FindClassScreen} />
       </Stack.Navigator>
     </NavigationContainer>
     </ProfileProvider>

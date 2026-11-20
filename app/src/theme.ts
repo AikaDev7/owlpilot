@@ -45,6 +45,8 @@ export const colors = {
   badgeText: "#785800",
   altBg: "#FFF6DF", // yellow "Worth considering" cards
   altBorder: "#FFDD80",
+  tabInactive: "#8A6A00", // inactive icons in the bottom tab bar
+  cardGray: "#EFEFEF", // upcoming class card background
   overlay: "rgba(0,0,0,0.4)", // dim background behind modals
 };
 
