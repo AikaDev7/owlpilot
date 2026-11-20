@@ -14,6 +14,11 @@ import { colors, fonts, shadow } from "../theme";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Results">;
 
+// "High Rated" only for professors rated 4.0 or higher
+function highRated(item: ScheduleItem) {
+  return item.rating !== null && item.rating >= 4.0 ? ["High Rated"] : [];
+}
+
 function badgesFor(item: ScheduleItem, bestCode: string | null) {
   const badges: string[] = [];
   if (item.code === bestCode) badges.push("Best Match");
@@ -297,14 +302,14 @@ export default function ResultsScreen({ navigation }: Props) {
               </View>
             )}
 
-            {(alternatives.length > 0 || schedule.waitlistOptions.length > 0) && (
+            {alternatives.length > 0 && (
               <>
                 <Text style={styles.sectionTitle}>Upgrade your professor</Text>
                 <Text style={styles.sectionSub}>Higher-rated professors for the same course, if you’re flexible.</Text>
                 {alternatives.map(({ item, index }) => {
                   const alt = item.alternative!;
                   return (
-                    <CourseCard key={item.code} item={alt.item} badges={[...(alt.item.waitlist ? [`Waitlist · ${alt.item.waitCount} of ${waitCapacity(alt.item)} spots taken`] : []), "High Rated"]} variant="yellow" showRmp extra={comparisonLine(item, alt.item, alt.reason)}>
+                    <CourseCard key={item.code} item={alt.item} badges={[...(alt.item.waitlist ? [`Waitlist · ${alt.item.waitCount} of ${waitCapacity(alt.item)} spots taken`] : []), ...highRated(alt.item)]} variant="yellow" showRmp extra={comparisonLine(item, alt.item, alt.reason)}>
                       {(explainLoading || summaryFor(alt.item.professor)) && (
                         <Text style={styles.altSummary}>{explainLoading ? "Summarizing reviews…" : summaryFor(alt.item.professor)}</Text>
                       )}
@@ -316,8 +321,15 @@ export default function ResultsScreen({ navigation }: Props) {
                     </CourseCard>
                   );
                 })}
+              </>
+            )}
+
+            {schedule.waitlistOptions.length > 0 && (
+              <>
+                <Text style={styles.sectionTitle}>Waitlist options</Text>
+                <Text style={styles.sectionSub}>These courses have no open section that fits. You can join a waitlist.</Text>
                 {schedule.waitlistOptions.map(({ item: opt }) => (
-                  <CourseCard key={`wait-${opt.code}`} item={opt} badges={[`Waitlist · ${opt.waitCount} of ${waitCapacity(opt)} spots taken`, "High Rated"]} variant="yellow" showRmp extra={`${opt.code} has no open section that fits your times.`}>
+                  <CourseCard key={`wait-${opt.code}`} item={opt} badges={[`Waitlist · ${opt.waitCount} of ${waitCapacity(opt)} spots taken`, ...highRated(opt)]} variant="yellow" showRmp extra={`${opt.code} has no open section that fits your times.`}>
                     {(explainLoading || summaryFor(opt.professor)) && (
                       <Text style={styles.altSummary}>{explainLoading ? "Summarizing reviews…" : summaryFor(opt.professor)}</Text>
                     )}

@@ -82,12 +82,13 @@ const WIDER_OPTIONS_PER_COURSE = 12; // used when the first try finds nothing
 const MAX_WAITLIST_OPTIONS = 2;
 const MAX_SUGGESTED_CANDIDATES = 6;
 const MAX_LEAVES = 30000; // stop searching after this many complete schedules
-const ONLINE_PRIORITY_GAIN = 0.5; // a selected course keeps first claim on an online slot if it gains at least this much
 const MIN_DIFFERENT = 2; // schedules shown together differ in at least this many courses or professors
 
 // Course levels that fit each year when we fill open slots
 const FIT_LEVELS: Record<string, number[]> = { Freshman: [1000], Sophomore: [2000], Junior: [3000, 4000], Senior: [4000] };
 const WRONG_LEVEL_PENALTY = 4;
+const WRONG_DAY_PENALTY = 12; // per class-day on a day the student did not pick
+const LOW_LEVEL_PENALTY = 15; // a juniors/seniors suggestion at 1000 level, only if nothing else fits
 // Interest electives may also be one level below (a junior can take a 2000-level elective)
 const INTEREST_LEVELS: Record<string, number[]> = { ...FIT_LEVELS, Junior: [2000, 3000, 4000] };
 
@@ -198,12 +199,13 @@ function scoreItems(items: ScheduleItem[], ctx: Context, relaxed: boolean): numb
       const isInterestElective = item.suggestedReason?.startsWith("Elective");
       score += isInterestElective ? 10 : 6; // interest electives rank above core courses
       if (!isInterestElective && item.level > 0 && !(FIT_LEVELS[ctx.year ?? ""] ?? []).includes(item.level)) score -= WRONG_LEVEL_PENALTY;
+      if (item.level === 1000 && (ctx.year === "Junior" || ctx.year === "Senior")) score -= LOW_LEVEL_PENALTY;
     }
     if (matchesInterest({ code: item.code, title: item.title, level: 0, prerequisites: [] }, ctx.interests)) score += 3;
 
     for (const b of item.blocks) {
       if (!relaxed) {
-        if (prefs.days.length > 0 && !prefs.days.includes(b.day)) score -= 3;
+        if (prefs.days.length > 0 && !prefs.days.includes(b.day)) score -= WRONG_DAY_PENALTY;
         if (!anyTime && !prefs.times.includes(timeOfDay(b.start))) score -= 2;
       }
       for (const rule of softRules) {
@@ -386,16 +388,15 @@ function search(entries: Entry[], requiredTarget: number, maxSuggested: number, 
   }
 
   // Selected courses get first claim on online slots: a suggested (filler) course may be online only if no
-  // selected in-person course could take an online section with a professor rated 0.5+ higher instead.
+  // selected in-person course could take an online section that fits the rest of the schedule.
   function fillerTakesBetterOnlineSlot(items: ScheduleItem[]) {
     if (!items.some((i) => i.suggested && i.online)) return false;
     for (const e of entries) {
       if (e.suggested) continue;
       const current = items.find((i) => i.code === e.code);
       if (!current || current.online) continue;
-      const needed = (current.rating ?? NO_RATING_SCORE) + ONLINE_PRIORITY_GAIN;
       const others = items.filter((i) => i !== current && !(i.suggested && i.online)); // the filler would give the slot up
-      if (e.open.some((o) => o.online && o.rating !== null && o.rating >= needed && !others.some((x) => blocksConflict(x.blocks, o.blocks)))) return true;
+      if (e.open.some((o) => o.online && !others.some((x) => blocksConflict(x.blocks, o.blocks)))) return true;
     }
     return false;
   }
@@ -733,6 +734,8 @@ function suggestedEntries(input: SchedulerInput, ctx: Context, selectedCodes: st
     }
   }
   for (const c of planCourses) if (fitLevels.includes(c.level)) add(c, planReason);
+  // 1000-level core courses for juniors/seniors only come last (and are penalized in the score)
+  for (const c of planCourses) if (c.level !== 1000 || !(input.year === "Junior" || input.year === "Senior")) add(c, planReason);
   for (const c of planCourses) add(c, planReason);
   return entries;
 }
