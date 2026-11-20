@@ -3,7 +3,7 @@
 export type RootStackParamList = {
   Splash: undefined;
   Welcome: undefined;
-  AboutYou: { major: string };
+  AboutYou: { major: string; edit?: boolean };
   SelectCourses: undefined;
   Preferences: undefined;
   Building: undefined;
@@ -11,5 +11,7 @@ export type RootStackParamList = {
   Home: undefined;
   Calendar: undefined;
   Profile: undefined;
+  Notifications: undefined;
+  HelpSupport: undefined;
   FindClass: { building: string; room: string; course: string; buildingName?: string };
 };

@@ -17,6 +17,8 @@ import ResultsScreen from "./src/screens/ResultsScreen";
 import HomeScreen from "./src/screens/HomeScreen";
 import CalendarScreen from "./src/screens/CalendarScreen";
 import ProfileScreen from "./src/screens/ProfileScreen";
+import NotificationsScreen from "./src/screens/NotificationsScreen";
+import HelpSupportScreen from "./src/screens/HelpSupportScreen";
 import FindClassScreen from "./src/screens/FindClassScreen";
 
 // Keep the native splash visible until the fonts are ready
@@ -55,6 +57,8 @@ export default function App() {
         <Stack.Screen name="Home" component={HomeScreen} options={{ animation: "none" }} />
         <Stack.Screen name="Calendar" component={CalendarScreen} options={{ animation: "none" }} />
         <Stack.Screen name="Profile" component={ProfileScreen} options={{ animation: "none" }} />
+        <Stack.Screen name="Notifications" component={NotificationsScreen} />
+        <Stack.Screen name="HelpSupport" component={HelpSupportScreen} />
         <Stack.Screen name="FindClass" component={FindClassScreen} />
       </Stack.Navigator>
     </NavigationContainer>

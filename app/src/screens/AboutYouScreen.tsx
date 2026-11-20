@@ -28,10 +28,11 @@ export default function AboutYouScreen({ navigation, route }: Props) {
   const [lastName, setLastName] = useState(profile.lastName);
   const [email, setEmail] = useState(profile.email);
   const [major, setMajor] = useState<string | null>(route.params.major);
-  const [year, setYear] = useState<string | null>(null);
-  const [startYear, setStartYear] = useState<number | null>(null);
-  const [gradYear, setGradYear] = useState<number | null>(null);
-  const [takenCodes, setTakenCodes] = useState<string[]>([]);
+  const edit = route.params.edit === true; // opened from Account: prefilled, saves and goes back
+  const [year, setYear] = useState<string | null>(edit ? profile.year : null);
+  const [startYear, setStartYear] = useState<number | null>(edit ? profile.startYear : null);
+  const [gradYear, setGradYear] = useState<number | null>(edit ? profile.gradYear : null);
+  const [takenCodes, setTakenCodes] = useState<string[]>(edit ? profile.takenCourses : []);
   const [gradCleared, setGradCleared] = useState(false); // grad year was wiped by a later start year
   const [showErrors, setShowErrors] = useState(false); // true after a failed Continue
 
@@ -68,7 +69,8 @@ export default function AboutYouScreen({ navigation, route }: Props) {
       return;
     }
     setProfile({ ...profile, firstName: firstName.trim(), lastName: lastName.trim(), email: email.trim(), major, year, startYear, gradYear, takenCourses: takenCodes });
-    navigation.navigate("SelectCourses");
+    if (edit) navigation.goBack();
+    else navigation.navigate("SelectCourses");
   }
 
   // Email is optional; only check the format when something is typed
@@ -211,7 +213,7 @@ export default function AboutYouScreen({ navigation, route }: Props) {
         </View>
 
         <View style={styles.button}>
-          <PrimaryButton title="Continue" arrow onPress={handleContinue} />
+          <PrimaryButton title={edit ? "Save" : "Continue"} arrow={!edit} onPress={handleContinue} />
         </View>
 
         <Text style={styles.hint}>You can update your academic information anytime in Account</Text>

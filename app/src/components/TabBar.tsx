@@ -1,5 +1,6 @@
-import { Pressable, StyleSheet, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import type { ReactElement } from "react";
+import { Alert, Pressable, StyleSheet, View } from "react-native";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { colors, shadow } from "../theme";
@@ -25,19 +26,25 @@ export default function TabBar({ active }: { active: Tab }) {
     navigation.navigate("FindClass", { building: next.building, room: next.room, course: next.course, buildingName: next.buildingName });
   }
 
-  const tabs: { key: Tab; icon: keyof typeof Ionicons.glyphMap; onPress: () => void }[] = [
-    { key: "Home", icon: "home-outline", onPress: () => navigation.navigate("Home") },
-    { key: "Calendar", icon: "calendar-outline", onPress: () => navigation.navigate("Calendar") },
-    ...(canFindClass ? [{ key: "FindClass" as Tab, icon: "location-outline" as const, onPress: openFindClass }] : []),
-    { key: "Profile", icon: "person-outline", onPress: () => navigation.navigate("Profile") },
+  function findTab() {
+    if (canFindClass) openFindClass();
+    else Alert.alert("Find class", "Indoor directions show up when your next class is in the Engineering Technology Center (Q).");
+  }
+
+  // Home, My Schedule, Find (map pin) and Account, like the Figma bar. Find is always visible.
+  const tabs: { key: Tab; label: string; render: (color: string) => ReactElement; onPress: () => void }[] = [
+    { key: "Home", label: "Home", render: (c) => <Ionicons name="home-outline" size={32} color={c} />, onPress: () => navigation.navigate("Home") },
+    { key: "Calendar", label: "My Schedule", render: (c) => <MaterialCommunityIcons name="calendar-clock-outline" size={32} color={c} />, onPress: () => navigation.navigate("Calendar") },
+    { key: "FindClass", label: "Find", render: (c) => <Ionicons name="location-outline" size={32} color={c} />, onPress: findTab },
+    { key: "Profile", label: "Account", render: (c) => <Ionicons name="person-outline" size={32} color={c} />, onPress: () => navigation.navigate("Profile") },
   ];
 
   return (
     <View style={styles.wrap} pointerEvents="box-none">
       <View style={styles.bar}>
         {tabs.map((t) => (
-          <Pressable key={t.key} onPress={t.onPress} hitSlop={8} style={styles.tab}>
-            <Ionicons name={t.icon} size={34} color={active === t.key ? colors.black : colors.tabInactive} />
+          <Pressable key={t.key} onPress={t.onPress} hitSlop={8} style={styles.tab} accessibilityRole="tab" accessibilityLabel={t.label}>
+            {t.render(active === t.key ? colors.black : colors.tabInactive)}
           </Pressable>
         ))}
       </View>
