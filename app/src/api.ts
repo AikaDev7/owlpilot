@@ -97,3 +97,38 @@ export async function explainSchedule(input: ExplainRequest): Promise<Explanatio
     clearTimeout(timer);
   }
 }
+
+// What the server read from one photo of a sign (POST /api/read-sign)
+export type SignResult = {
+  kind: "room" | "landmark" | "none";
+  room: string | null; // "Q-207"
+  landmark: "stairs" | "elevator" | "entrance" | "restroom" | "exit" | null;
+  confidence: number; // 0-1
+  error?: string;
+};
+
+// Sends ONE small JPEG (base64) to our server. Never throws: on any problem it returns kind "none" plus error.
+export async function readSign(imageBase64: string): Promise<SignResult> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30000);
+  try {
+    const response = await fetch(`${API_URL}/api/read-sign`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image: imageBase64 }),
+      signal: controller.signal,
+    });
+    const data = await response.json();
+    return {
+      kind: data.kind === "room" || data.kind === "landmark" ? data.kind : "none",
+      room: typeof data.room === "string" ? data.room : null,
+      landmark: typeof data.landmark === "string" ? data.landmark : null,
+      confidence: typeof data.confidence === "number" ? data.confidence : 0,
+      error: data.error,
+    };
+  } catch {
+    return { kind: "none", room: null, landmark: null, confidence: 0, error: "AI unavailable" };
+  } finally {
+    clearTimeout(timer);
+  }
+}

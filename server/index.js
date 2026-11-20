@@ -6,7 +6,7 @@ const cors = require("cors");
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "5mb" })); // room for one small base64 photo (read-sign)
 
 const PORT = process.env.PORT || 3000;
 const MODEL = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
@@ -154,14 +154,14 @@ const FALLBACK_MODEL = process.env.GEMINI_FALLBACK_MODEL || "gemini-3.1-flash-li
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // One Gemini call. Returns clean(parsed JSON), or throws an Error with `retryable` set.
-async function callGeminiOnce(model, prompt, timeoutMs, schema, clean) {
+async function callGeminiOnce(model, prompt, timeoutMs, schema, clean, image = null) {
   let response;
   try {
     response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.GEMINI_API_KEY },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
+        contents: [{ parts: image ? [{ inlineData: { mimeType: "image/jpeg", data: image } }, { text: prompt }] : [{ text: prompt }] }],
         generationConfig: { responseMimeType: "application/json", responseSchema: schema, temperature: 0.2 },
       }),
       signal: AbortSignal.timeout(timeoutMs),
@@ -194,7 +194,7 @@ async function callGeminiOnce(model, prompt, timeoutMs, schema, clean) {
 }
 
 // Main model (up to 3 tries), then the fallback model (up to 3 tries), all inside MAX_TOTAL_MS.
-async function parseWithGemini(prompt, schema = PREFERENCES_SCHEMA, clean = cleanRules, label = "parse-preferences") {
+async function parseWithGemini(prompt, schema = PREFERENCES_SCHEMA, clean = cleanRules, label = "parse-preferences", image = null) {
   const deadline = Date.now() + MAX_TOTAL_MS;
   const models = MODEL === FALLBACK_MODEL ? [MODEL] : [MODEL, FALLBACK_MODEL];
 
@@ -203,7 +203,7 @@ async function parseWithGemini(prompt, schema = PREFERENCES_SCHEMA, clean = clea
       const timeLeft = deadline - Date.now();
       if (timeLeft < 1500) throw new Error("ran out of time");
       try {
-        return await callGeminiOnce(model, prompt, Math.min(ATTEMPT_TIMEOUT_MS, timeLeft), schema, clean);
+        return await callGeminiOnce(model, prompt, Math.min(ATTEMPT_TIMEOUT_MS, timeLeft), schema, clean, image);
       } catch (err) {
         console.error(`${label}: ${model} try ${attempt + 1} failed: ${err.message}`);
         if (!err.retryable) break; // e.g. 400/404: retrying the same model won't help, go to the fallback
@@ -359,6 +359,57 @@ app.post("/api/explain-schedule", async (req, res) => {
     res.json(result);
   } catch (err) {
     console.error("explain-schedule gave up:", err.message);
+    res.json(failure);
+  }
+});
+
+// ---------- Read a room sign from a photo ----------
+const SIGN_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    kind: { type: "STRING" }, // "room", "landmark" or "none"
+    room: { type: "STRING" }, // "" when none
+    landmark: { type: "STRING" }, // "" when none
+    confidence: { type: "NUMBER" },
+  },
+  required: ["kind", "room", "landmark", "confidence"],
+};
+
+const SIGN_PROMPT = `Look at the photo. It was taken inside a university building (building Q). First read any text you can see.
+- If you can read a room number (for example on a door sign or a plaque, even on a plain background), answer kind "room" and put it in "room". Normalize formats like "Q 207", "207" and "Q207" to "Q-207" (always assume building Q).
+- Else if you clearly see stairs, an elevator, an entrance, or a restroom/exit sign, answer kind "landmark" and set "landmark" to one of: stairs, elevator, entrance, restroom, exit.
+- Otherwise answer kind "none".
+Do not invent a room number you cannot read. "confidence" is 0 to 1. Use an empty string for fields that do not apply. "kind" is exactly one of: room, landmark, none.`;
+
+// Turns Gemini's reply into a safe { kind, room, landmark, confidence }
+function cleanSign(raw) {
+  const landmarks = ["stairs", "elevator", "entrance", "restroom", "exit"];
+  let room = null;
+  if (typeof raw.room === "string") {
+    const m = raw.room.toUpperCase().match(/^\s*Q?[\s-]*(\d{3})\s*$/);
+    if (m) room = `Q-${m[1]}`;
+  }
+  const landmark = landmarks.includes(raw.landmark) ? raw.landmark : null;
+  const confidence = typeof raw.confidence === "number" ? Math.max(0, Math.min(1, raw.confidence)) : 0;
+  if (raw.kind === "room" && room) return { kind: "room", room, landmark: null, confidence };
+  if (raw.kind === "landmark" && landmark) return { kind: "landmark", room: null, landmark, confidence };
+  return { kind: "none", room: null, landmark: null, confidence: 0 };
+}
+
+// Body: { image: base64 JPEG }   Reply: { kind, room, landmark, confidence }  (or { kind: "none", error: "AI unavailable" })
+// Not cached and the image is never logged.
+app.post("/api/read-sign", async (req, res) => {
+  const failure = { kind: "none", room: null, landmark: null, confidence: 0, error: "AI unavailable" };
+  const image = typeof req.body?.image === "string" ? req.body.image.replace(/^data:image\/\w+;base64,/, "") : "";
+  if (!image) return res.json(failure);
+  if (!process.env.GEMINI_API_KEY) {
+    console.error("read-sign: GEMINI_API_KEY is not set");
+    return res.json(failure);
+  }
+  try {
+    res.json(await parseWithGemini(SIGN_PROMPT, SIGN_SCHEMA, cleanSign, "read-sign", image));
+  } catch (err) {
+    console.error("read-sign gave up:", err.message);
     res.json(failure);
   }
 });

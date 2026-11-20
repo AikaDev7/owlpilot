@@ -47,6 +47,9 @@ export const colors = {
   altBorder: "#FFDD80",
   tabInactive: "#8A6A00", // inactive icons in the bottom tab bar
   cardGray: "#EFEFEF", // upcoming class card background
+  successBg: "#DDF3E2", // green "You're here!" card
+  successBorder: "#2E9E4F",
+  successText: "#17602D",
   overlay: "rgba(0,0,0,0.4)", // dim background behind modals
 };
 

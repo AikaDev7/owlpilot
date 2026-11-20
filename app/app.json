@@ -23,6 +23,7 @@
     },
     "plugins": [
       "expo-font",
+      ["expo-camera", { "cameraPermission": "OwlPilot uses the camera to read room signs and find your class." }],
       [
         "expo-splash-screen",
         {
