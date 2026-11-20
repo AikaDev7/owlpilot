@@ -8,14 +8,15 @@ import PrimaryButton from "../components/PrimaryButton";
 import { useProfile } from "../context/ProfileContext";
 import { RootStackParamList } from "../navigation";
 import { readSign, SignResult } from "../api";
-import { findNode, mapRooms, MapNode, routeSteps } from "../logic/indoorRoute";
+import { findNode, hasIndoorMap, mapRooms, MapNode, MAPPED_BUILDINGS, routeSteps } from "../logic/indoorRoute";
+import { openBuildingInMaps } from "../logic/maps";
 import { startsText } from "../logic/classTiming";
 import { colors, fonts, shadow } from "../theme";
 
 // Where the student is, found from a photo or picked by hand
 type Located = { nodeId: string; label: string };
 // What the result area shows
-type Result = { kind: "here" } | { kind: "located"; located: Located } | { kind: "message"; text: string };
+type Result = { kind: "here" } | { kind: "located"; located: Located } | { kind: "message"; text: string } | { kind: "otherBuilding"; text: string };
 
 const MIN_CONFIDENCE = 0.4;
 
@@ -25,9 +26,11 @@ function whereLabel(node: MapNode): string {
 }
 
 export default function FindClassScreen({ navigation, route }: NativeStackScreenProps<RootStackParamList, "FindClass">) {
-  const { building, room, course } = route.params;
+  const { building, room, course, buildingName } = route.params;
   const { profile } = useProfile();
   const targetId = building && room ? `${building}-${room}` : "";
+  const mapped = hasIndoorMap(building);
+  const findBuilding = () => openBuildingInMaps(buildingName || MAPPED_BUILDINGS[building] || building);
 
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView>(null);
@@ -48,7 +51,13 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
     if (sign.kind === "none" || sign.confidence < MIN_CONFIDENCE) {
       return setResult({ kind: "message", text: "Couldn’t read a sign. Move closer and try again." });
     }
-    if (sign.kind === "room" && sign.room) return locate(sign.room);
+    if (sign.kind === "room" && sign.room) {
+      const scannedBuilding = sign.room.split("-")[0];
+      if (scannedBuilding !== building) {
+        return setResult({ kind: "otherBuilding", text: `That’s Building ${scannedBuilding}. Your class is in Building ${building}.` });
+      }
+      return locate(sign.room);
+    }
     if (sign.landmark === "entrance") return locate("entrance-1");
     if (sign.landmark === "stairs" || sign.landmark === "elevator") return locate(`${sign.landmark}-${lastFloor}`);
     setResult({ kind: "message", text: "We can’t place that sign on our map yet." });
@@ -100,6 +109,18 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
         <Text style={styles.topText}>{targetId ? `Going to ${targetId}${course ? ` · ${course}` : ""}` : "No class selected"}</Text>
       </View>
 
+      {!mapped ? (
+        <View style={styles.noMap}>
+          <Text style={styles.noCameraTitle}>No indoor map yet</Text>
+          <Text style={styles.noCameraText}>
+            Indoor directions are available for the Engineering Technology Center (Q) for now.
+          </Text>
+          <View style={{ alignSelf: "stretch", marginTop: 14 }}>
+            <PrimaryButton title="Find the building" onPress={findBuilding} fontSize={18} />
+          </View>
+        </View>
+      ) : (
+      <>
       <View style={styles.cameraBox}>
         {cameraAllowed ? (
           <>
@@ -136,6 +157,12 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
 
         <ScrollView style={styles.results} contentContainerStyle={{ gap: 10 }}>
           {result?.kind === "message" && <Text style={styles.message}>{result.text}</Text>}
+          {result?.kind === "otherBuilding" && (
+            <>
+              <Text style={styles.message}>{result.text}</Text>
+              <PrimaryButton title="Find the building" onPress={findBuilding} fontSize={18} />
+            </>
+          )}
           {result?.kind === "here" && (
             <View style={styles.here}>
               <Text style={styles.hereTitle}>You’re here!</Text>
@@ -146,6 +173,8 @@ export default function FindClassScreen({ navigation, route }: NativeStackScreen
           {result?.kind === "located" && <LocatedView located={result.located} targetId={targetId} onSwitch={(l) => locate(l.nodeId)} otherFloor={otherFloor(result.located)} />}
         </ScrollView>
       </View>
+      </>
+      )}
 
       <Modal visible={picking} animationType="slide" transparent onRequestClose={() => setPicking(false)}>
         <View style={styles.overlay}>
@@ -217,6 +246,7 @@ const styles = StyleSheet.create({
   frameWrap: { ...StyleSheet.absoluteFill, alignItems: "center", justifyContent: "center" },
   frame: { width: "75%", height: "45%", borderWidth: 3, borderColor: colors.yellow, borderRadius: 16 },
   frameHint: { fontFamily: fonts.bodyMedium, fontSize: 13, color: colors.white, marginTop: 10 },
+  noMap: { margin: 16, borderRadius: 16, padding: 20, backgroundColor: colors.cardGray, alignItems: "center" },
   noCamera: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24, backgroundColor: colors.cardGray },
   noCameraTitle: { fontFamily: fonts.title, fontSize: 20, color: colors.textDark },
   noCameraText: { fontFamily: fonts.body, fontSize: 14, color: colors.textMuted, textAlign: "center", marginTop: 6 },

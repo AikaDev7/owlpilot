@@ -19,6 +19,13 @@ for (const [a, b] of buildingJson.edges as string[][]) {
   neighbors.set(b, [...(neighbors.get(b) ?? []), { id: a, cost }]);
 }
 
+// Indoor maps exist only for these buildings (building code -> name)
+export const MAPPED_BUILDINGS: Record<string, string> = { Q: "Engineering Technology Center" };
+
+export function hasIndoorMap(building: string): boolean {
+  return building in MAPPED_BUILDINGS;
+}
+
 export function findNode(id: string): MapNode | undefined {
   return nodeById.get(id);
 }

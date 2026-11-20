@@ -7,6 +7,7 @@ import { RootStackParamList } from "../navigation";
 import { useProfile } from "../context/ProfileContext";
 import { getNow } from "../logic/demoClock";
 import { homeClasses, nextClass } from "../logic/homeClasses";
+import { hasIndoorMap } from "../logic/indoorRoute";
 
 type Tab = "Home" | "Calendar" | "FindClass" | "Profile";
 
@@ -15,15 +16,19 @@ export default function TabBar({ active }: { active: Tab }) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { profile } = useProfile();
 
+  // The Find Class tab is only shown for an Up Next class in a building that has an indoor map
+  const next = nextClass(homeClasses(profile.acceptedSchedule).inPerson, getNow());
+  const canFindClass = next !== null && hasIndoorMap(next.building);
+
   function openFindClass() {
-    const next = nextClass(homeClasses(profile.acceptedSchedule).inPerson, getNow());
-    navigation.navigate("FindClass", { building: next?.building ?? "", room: next?.room ?? "", course: next?.course ?? "" });
+    if (!next) return;
+    navigation.navigate("FindClass", { building: next.building, room: next.room, course: next.course, buildingName: next.buildingName });
   }
 
   const tabs: { key: Tab; icon: keyof typeof Ionicons.glyphMap; onPress: () => void }[] = [
     { key: "Home", icon: "home-outline", onPress: () => navigation.navigate("Home") },
     { key: "Calendar", icon: "calendar-outline", onPress: () => navigation.navigate("Calendar") },
-    { key: "FindClass", icon: "location-outline", onPress: openFindClass },
+    ...(canFindClass ? [{ key: "FindClass" as Tab, icon: "location-outline" as const, onPress: openFindClass }] : []),
     { key: "Profile", icon: "person-outline", onPress: () => navigation.navigate("Profile") },
   ];
 

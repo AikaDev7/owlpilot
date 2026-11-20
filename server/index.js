@@ -376,7 +376,7 @@ const SIGN_SCHEMA = {
 };
 
 const SIGN_PROMPT = `Look at the photo. It was taken inside a university building (building Q). First read any text you can see.
-- If you can read a room number (for example on a door sign or a plaque, even on a plain background), answer kind "room" and put it in "room". Normalize formats like "Q 207", "207" and "Q207" to "Q-207" (always assume building Q).
+- If you can read a room number (for example on a door sign or a plaque, even on a plain background), answer kind "room" and put it in "room". Normalize the format to "<building letter>-<number>": "Q 207" and "Q207" become "Q-207", "J 1111" becomes "J-1111". Keep the building letter if the sign shows one. Only if the sign shows a number with no letter at all, assume building Q ("207" becomes "Q-207").
 - Else if you clearly see stairs, an elevator, an entrance, or a restroom/exit sign, answer kind "landmark" and set "landmark" to one of: stairs, elevator, entrance, restroom, exit.
 - Otherwise answer kind "none".
 Do not invent a room number you cannot read. "confidence" is 0 to 1. Use an empty string for fields that do not apply. "kind" is exactly one of: room, landmark, none.`;
@@ -386,8 +386,9 @@ function cleanSign(raw) {
   const landmarks = ["stairs", "elevator", "entrance", "restroom", "exit"];
   let room = null;
   if (typeof raw.room === "string") {
-    const m = raw.room.toUpperCase().match(/^\s*Q?[\s-]*(\d{3})\s*$/);
-    if (m) room = `Q-${m[1]}`;
+    // keep the building letter if there is one ("J 1111" -> "J-1111"); no letter means building Q
+    const m = raw.room.toUpperCase().match(/^\s*([A-Z])?[\s-]*(\d{3,4})\s*$/);
+    if (m) room = `${m[1] || "Q"}-${m[2]}`;
   }
   const landmark = landmarks.includes(raw.landmark) ? raw.landmark : null;
   const confidence = typeof raw.confidence === "number" ? Math.max(0, Math.min(1, raw.confidence)) : 0;

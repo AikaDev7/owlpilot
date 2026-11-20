@@ -11,5 +11,5 @@ export type RootStackParamList = {
   Home: undefined;
   Calendar: undefined;
   Profile: undefined;
-  FindClass: { building: string; room: string; course: string };
+  FindClass: { building: string; room: string; course: string; buildingName?: string };
 };
