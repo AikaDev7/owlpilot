@@ -1,6 +1,7 @@
 // Runs the scheduler for a demo student and prints the results: npm run test:scheduler
 // (add "extra" to also run a case that fills open slots with suggested courses)
 import { buildSchedules, getNextSchedule, meetingLines, Schedule, SchedulerInput } from "../src/logic/scheduler";
+import { courseSwapIdeas, courseSwapLine } from "../src/logic/advisor";
 import { AiRules } from "../src/context/ProfileContext";
 
 declare const process: { argv: string[] }; // Node global (no @types/node in this project)
@@ -112,3 +113,21 @@ for (let i = 0; i < 2; i++) {
   printSchedule(`Another option #${i + 1}`, next);
   shown.push(next);
 }
+
+// "Swap the course" ideas (mini academic advisor)
+function printIdeas(name: string, input: SchedulerInput) {
+  console.log(`\n==================== Swap the course: ${name} ====================`);
+  for (const s of buildSchedules(input).schedules) {
+    console.log(`\n${s.strategy ? strategyNames[s.strategy] : "Option"}: ${s.items.map((i) => i.code).join(", ")}`);
+    const ideas = courseSwapIdeas(input, s);
+    if (ideas.length === 0) console.log("  (no ideas, section hidden)");
+    for (const idea of ideas) console.log(`  ${courseSwapLine(idea)}\n      ${meetingLines(idea.item).join(" | ")}`);
+  }
+}
+printIdeas("senior demo", senior);
+printIdeas("senior with 11 taken courses", {
+  ...senior,
+  takenCourses: ["CSE 1321", "CSE 1322", "CSE 2300", "CS 3305", "CS 3410", "CS 3502", "CS 3503", "MATH 1190", "MATH 2202", "ENGL 1101", "ENGL 1102"],
+  selectedCourses: ["CS 4308", "CS 4504", "AI 3642", "CS 3622"],
+  preferences: { ...senior.preferences, busyTimes: [] },
+});

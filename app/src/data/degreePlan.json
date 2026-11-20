@@ -1,0 +1,436 @@
+{
+ "program": "BS Computer Science (KSU, 2025 catalog curriculum sheet)",
+ "source": "KSU CCSE BSCS 2025 curriculum sheet (unofficial; KSU Catalog takes precedence)",
+ "totalCredits": 120,
+ "rules": {
+  "minGrade": "C in major courses; B in CSE 1321/L and CSE 1322/L",
+  "electives": "15 credits of major electives or one concentration; at least 9 credits CS/AI prefix"
+ },
+ "equivalents": {
+  "MATH 2345": [
+   "CSE 2300"
+  ],
+  "CS 3642": [
+   "AI 3642"
+  ],
+  "CS 4267": [
+   "AI 4267"
+  ],
+  "CS 4732": [
+   "AI 4732"
+  ],
+  "CS 4742": [
+   "AI 4742"
+  ],
+  "CS 4277": [
+   "AI 4277"
+  ]
+ },
+ "courses": [
+  {
+   "code": "CSE 1321",
+   "title": "Programming and Problem Solving I (+ lab CSE 1321L)",
+   "credits": 4,
+   "prerequisites": [],
+   "group": "core",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "CSE 1322",
+   "title": "Programming and Problem Solving II (+ lab CSE 1322L)",
+   "credits": 4,
+   "prerequisites": [
+    "CSE 1321",
+    [
+     "MATH 1113",
+     "MATH 1190",
+     "MATH 2202"
+    ]
+   ],
+   "group": "core",
+   "offeredSpring2027": true,
+   "note": "Math prereq can be taken at the same time"
+  },
+  {
+   "code": "MATH 1190",
+   "title": "Calculus I",
+   "credits": 4,
+   "prerequisites": [],
+   "group": "math",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "MATH 2202",
+   "title": "Calculus II",
+   "credits": 4,
+   "prerequisites": [
+    "MATH 1190"
+   ],
+   "group": "core",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "MATH 2345",
+   "title": "Discrete Mathematics",
+   "credits": 3,
+   "prerequisites": [
+    [
+     "MATH 1113",
+     "MATH 1190"
+    ]
+   ],
+   "group": "core",
+   "offeredSpring2027": false,
+   "note": "CSE 2300 Discrete Structures treated as equivalent"
+  },
+  {
+   "code": "TCOM 2010",
+   "title": "Technical Writing",
+   "credits": 3,
+   "prerequisites": [
+    "ENGL 1102"
+   ],
+   "group": "core",
+   "offeredSpring2027": false
+  },
+  {
+   "code": "STAT 2332",
+   "title": "Probability and Data Analysis",
+   "credits": 3,
+   "prerequisites": [
+    "MATH 1190"
+   ],
+   "group": "major",
+   "offeredSpring2027": false
+  },
+  {
+   "code": "MATH 3260",
+   "title": "Linear Algebra",
+   "credits": 3,
+   "prerequisites": [
+    "MATH 1190"
+   ],
+   "group": "major",
+   "offeredSpring2027": false
+  },
+  {
+   "code": "CS 3305",
+   "title": "Data Structures",
+   "credits": 3,
+   "prerequisites": [
+    [
+     "MATH 2345",
+     "CSE 2300"
+    ],
+    "CSE 1322"
+   ],
+   "group": "major",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "CS 3503",
+   "title": "Computer Organization and Architecture",
+   "credits": 3,
+   "prerequisites": [
+    "CSE 1322"
+   ],
+   "group": "major",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "CS 3502",
+   "title": "Operating Systems",
+   "credits": 3,
+   "prerequisites": [
+    "CS 3305",
+    "CS 3503"
+   ],
+   "group": "major",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "SWE 3313",
+   "title": "Introduction to Software Engineering",
+   "credits": 3,
+   "prerequisites": [
+    "CSE 1322"
+   ],
+   "group": "major",
+   "offeredSpring2027": false
+  },
+  {
+   "code": "CS 3410",
+   "title": "Introduction to Database Systems",
+   "credits": 3,
+   "prerequisites": [
+    "CSE 1322"
+   ],
+   "group": "major",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "CS 4306",
+   "title": "Algorithm Analysis",
+   "credits": 3,
+   "prerequisites": [
+    "CS 3305"
+   ],
+   "group": "major",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "CS 3622",
+   "title": "Fundamentals of Data Communications",
+   "credits": 3,
+   "prerequisites": [
+    "CSE 1322"
+   ],
+   "group": "major",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "CS 4504",
+   "title": "Parallel and Distributed Computing",
+   "credits": 3,
+   "prerequisites": [
+    "CS 3305",
+    "CS 3503",
+    "CS 3502"
+   ],
+   "group": "major",
+   "offeredSpring2027": true,
+   "note": "CS 3502 can be taken at the same time"
+  },
+  {
+   "code": "CS 4308",
+   "title": "Concepts of Programming Languages",
+   "credits": 3,
+   "prerequisites": [
+    "CS 3305",
+    "CS 3503"
+   ],
+   "group": "major",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "CSE 3801",
+   "title": "Professional Practices and Ethics",
+   "credits": 2,
+   "prerequisites": [
+    "CSE 1322"
+   ],
+   "group": "major",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "CS 4850",
+   "title": "Senior Project",
+   "credits": 3,
+   "prerequisites": [
+    "CS 3502",
+    "SWE 3313"
+   ],
+   "group": "major",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "AI 3642",
+   "title": "Artificial Intelligence",
+   "credits": 3,
+   "prerequisites": [
+    "CS 3305"
+   ],
+   "group": "elective:ai",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "AI 4267",
+   "title": "Machine Learning",
+   "credits": 3,
+   "prerequisites": [
+    "AI 3642"
+   ],
+   "group": "elective:ai",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "AI 4732",
+   "title": "Machine Vision",
+   "credits": 3,
+   "prerequisites": [
+    "AI 3642"
+   ],
+   "group": "elective:ai",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "AI 4742",
+   "title": "Natural Language Processing",
+   "credits": 3,
+   "prerequisites": [
+    "AI 3642"
+   ],
+   "group": "elective:ai",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "CS 4265",
+   "title": "Big Data Analytics",
+   "credits": 3,
+   "prerequisites": [
+    "CS 3305",
+    "CS 3410"
+   ],
+   "group": "elective:data",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "CS 4412",
+   "title": "Data Mining",
+   "credits": 3,
+   "prerequisites": [
+    "CS 3305",
+    "CS 3410"
+   ],
+   "group": "elective:data",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "CS 4422",
+   "title": "Information Retrieval",
+   "credits": 3,
+   "prerequisites": [
+    "CS 3305",
+    "CS 3410"
+   ],
+   "group": "elective:data",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "CS 4522",
+   "title": "HPC and Parallel Programming",
+   "credits": 3,
+   "prerequisites": [
+    "CS 4504"
+   ],
+   "group": "elective:data",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "CS 4524",
+   "title": "Cloud Computing",
+   "credits": 3,
+   "prerequisites": [
+    "CS 4504"
+   ],
+   "group": "elective:data",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "CS 4722",
+   "title": "Computer Graphics and Multimedia",
+   "credits": 3,
+   "prerequisites": [
+    "CS 3305"
+   ],
+   "group": "elective",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "CS 3626",
+   "title": "Cryptography",
+   "credits": 3,
+   "prerequisites": [
+    [
+     "MATH 2345",
+     "CSE 2300"
+    ],
+    "CS 3305"
+   ],
+   "group": "elective:security",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "CS 4612",
+   "title": "Software Security",
+   "credits": 3,
+   "prerequisites": [
+    "CS 3626",
+    "CS 3502"
+   ],
+   "group": "elective:security",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "CS 4622",
+   "title": "Computer Networks",
+   "credits": 3,
+   "prerequisites": [
+    "CS 3503",
+    "CS 3622"
+   ],
+   "group": "elective:security",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "CS 4626",
+   "title": "Computer and Network Security",
+   "credits": 3,
+   "prerequisites": [
+    "CS 3626",
+    "CS 4622"
+   ],
+   "group": "elective:security",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "CS 4632",
+   "title": "Modeling and Simulation",
+   "credits": 3,
+   "prerequisites": [
+    "CS 3305"
+   ],
+   "group": "elective",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "CS 4712",
+   "title": "User Interface Engineering",
+   "credits": 3,
+   "prerequisites": [
+    "CSE 1322"
+   ],
+   "group": "elective",
+   "offeredSpring2027": true
+  },
+  {
+   "code": "CS 4720",
+   "title": "Internet Programming",
+   "credits": 3,
+   "prerequisites": [
+    "CS 3305",
+    [
+     "CS 3410",
+     "CSE 3153"
+    ]
+   ],
+   "group": "elective",
+   "offeredSpring2027": false
+  },
+  {
+   "code": "CS 4322",
+   "title": "Mobile Software Development",
+   "credits": 3,
+   "prerequisites": [
+    "CS 3305",
+    "SWE 3313",
+    [
+     "CS 3410",
+     "CSE 3153"
+    ]
+   ],
+   "group": "elective",
+   "offeredSpring2027": true
+  }
+ ]
+}

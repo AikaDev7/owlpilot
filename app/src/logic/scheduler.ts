@@ -73,7 +73,7 @@ export type SchedulerResult = {
 // ---------- Settings ----------
 
 const NEUTRAL_RATING = 3.0; // the "average" rating the score is measured against
-const NO_RATING_SCORE = 2.5; // a professor without ratings counts as below average
+export const NO_RATING_SCORE = 2.5; // a professor without ratings counts as below average
 const MIN_ALTERNATIVE_GAIN = 0.8; // an alternative section needs a professor rated this much higher
 const TRAVEL_MINUTES = 10; // between two in-person classes
 const LONG_GAP_MINUTES = 120;
@@ -96,7 +96,7 @@ function ordinal(n: number) {
   return ORDINALS[n] ?? `${n}th`;
 }
 
-function normCode(code: string) {
+export function normCode(code: string) {
   return code.trim().toUpperCase().replace(/\s+/g, " ");
 }
 
@@ -130,7 +130,7 @@ function sectionBlocks(s: Section): Block[] {
 }
 
 // 10 min travel time only matters when both classes are in person
-function blocksConflict(a: Block[], b: Block[]) {
+export function blocksConflict(a: Block[], b: Block[]) {
   for (const x of a) {
     for (const y of b) {
       if (x.day !== y.day) continue;
@@ -174,7 +174,7 @@ function matchesInterest(course: Course, interests: string[]) {
 
 // ---------- Scoring ----------
 
-type Context = {
+export type Context = {
   prefs: Preferences;
   busy: Busy[];
   softRules: AiRules["softRules"];
@@ -311,7 +311,7 @@ type Options = { open: ScheduleItem[]; waitlist: ScheduleItem[] };
 
 // Every usable lecture+lab combination of a course (deduped, open seats first).
 // Sections that hit a busy time or are on another campus are never included.
-function allItems(course: Pick<Course, "code" | "title">, ctx: Context, suggestedReason?: string, allowOnline = false): ScheduleItem[] {
+export function allItems(course: Pick<Course, "code" | "title">, ctx: Context, suggestedReason?: string, allowOnline = false): ScheduleItem[] {
   const busy = ctx.busy;
   const usable = (s: Section) => campusAllowed(s, ctx.campus) && !hitsBusy(sectionBlocks(s), busy);
 
@@ -340,7 +340,7 @@ function allItems(course: Pick<Course, "code" | "title">, ctx: Context, suggeste
 }
 
 // Every class of the item is on a preferred day and in a preferred time (online classes with no meetings always fit)
-function fitsPreferences(item: ScheduleItem, ctx: Context) {
+export function fitsPreferences(item: ScheduleItem, ctx: Context) {
   const anyTime = ctx.prefs.times.length === 0 || ctx.prefs.times.includes("Anytime");
   return item.blocks.every((b) => (ctx.prefs.days.length === 0 || ctx.prefs.days.includes(b.day)) && (anyTime || ctx.prefs.times.includes(timeOfDay(b.start))));
 }
@@ -560,7 +560,7 @@ function rank(found: Found[], strategy: Strategy): Found[] {
 // ---------- Main function ----------
 
 // Busy times + AI hard rules + soft rules for one request
-function makeContext(input: SchedulerInput): Context {
+export function makeContext(input: SchedulerInput): Context {
   const { preferences: prefs, aiRules } = input;
 
   // Hard time blocks: busy times from the student and hard rules from the AI

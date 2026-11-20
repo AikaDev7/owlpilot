@@ -6,6 +6,7 @@ import { useProfile } from "../context/ProfileContext";
 import { Explanation, explainSchedule, parsePreferences } from "../api";
 import CourseCard, { waitCapacity } from "../components/CourseCard";
 import PrimaryButton from "../components/PrimaryButton";
+import { CourseSwap, courseSwapIdeas, courseSwapLine } from "../logic/advisor";
 import { buildExplainRequest, explainKey } from "../logic/explain";
 import { buildSchedules, getNextSchedule, Schedule, ScheduleItem, SchedulerInput, Strategy, swapItem } from "../logic/scheduler";
 import type { RootStackParamList } from "../navigation";
@@ -162,6 +163,26 @@ export default function ResultsScreen({ navigation }: Props) {
     showToast(alt);
   }
 
+  // "Swap course": replace a course by another course of the degree plan (rechecks conflicts, busy times, online limit)
+  function swapCourse(idea: CourseSwap) {
+    if (!input || !schedule) return;
+    const result = swapItem({ ...input, preferences: { ...input.preferences, numOnline: onlineLimit } }, schedule, idea.index, idea.item);
+    if ("error" in result) {
+      setSwapError({ code: idea.item.code, message: result.error });
+      return;
+    }
+    // Forget the AI explanation of the old schedule so a new one is requested for the new schedule
+    asked.current.delete(key);
+    setExplanations((prev) => {
+      const { [key]: _old, ...rest } = prev;
+      return rest;
+    });
+    setSwapError(null);
+    setSchedules(schedules.map((sch, i) => (i === selected ? result.schedule : sch)));
+    setToast(`Swapped ${idea.replaces.code} for ${idea.item.code}`);
+    setTimeout(() => setToast(null), 2500);
+  }
+
   function accept() {
     if (!schedule) return;
     setProfile({ ...profile, acceptedSchedule: schedule });
@@ -169,6 +190,11 @@ export default function ResultsScreen({ navigation }: Props) {
   }
 
   const waitlisted = schedule ? schedule.items.filter((i) => i.waitlist).length : 0;
+  const onlineLimit = (input?.preferences.numOnline ?? 0) + (onlineBonus[selected] ?? 0);
+  const courseSwaps = useMemo(
+    () => (input && schedule ? courseSwapIdeas({ ...input, preferences: { ...input.preferences, numOnline: onlineLimit } }, schedule) : []),
+    [schedule, onlineLimit], // eslint-disable-line react-hooks/exhaustive-deps
+  );
   const alternatives = schedule ? schedule.items.map((item, index) => ({ item, index })).filter((x) => x.item.alternative) : [];
 
   return (
@@ -299,6 +325,21 @@ export default function ResultsScreen({ navigation }: Props) {
                     {swapError?.code === opt.code && <Text style={styles.error}>{swapError.message}</Text>}
                     <Pressable onPress={() => choose(-1, opt)} style={styles.choose}>
                       <Text style={styles.chooseText}>Add to my schedule</Text>
+                    </Pressable>
+                  </CourseCard>
+                ))}
+              </>
+            )}
+
+            {courseSwaps.length > 0 && (
+              <>
+                <Text style={styles.sectionTitle}>Swap the course</Text>
+                <Text style={styles.sectionSub}>Both count toward your degree. Take one now and the other next semester.</Text>
+                {courseSwaps.map((idea) => (
+                  <CourseCard key={idea.item.code} item={idea.item} badges={idea.item.tags.includes("outsidePreferredTime") ? ["Outside your preferred time"] : []} variant="yellow" showRmp extra={courseSwapLine(idea)}>
+                    {swapError?.code === idea.item.code && <Text style={styles.error}>{swapError.message}</Text>}
+                    <Pressable onPress={() => swapCourse(idea)} style={styles.choose}>
+                      <Text style={styles.chooseText}>Swap course</Text>
                     </Pressable>
                   </CourseCard>
                 ))}
