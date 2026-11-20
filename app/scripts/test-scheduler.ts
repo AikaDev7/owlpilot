@@ -42,6 +42,9 @@ function printSchedule(title: string, s: Schedule) {
   if (s.badges.length > 0) console.log(`  Badges: ${s.badges.join(" | ")}`);
   if (s.onlineNote) console.log(`  ${s.onlineNote}`);
   console.log(`  (score ${s.score}, avg professor rating ${s.avgRating}, ${s.daysOnCampus} days on campus)`);
+  for (const o of s.waitlistOptions) {
+    console.log(`  Waitlist option (${o.reason}): ${o.item.code} ${o.item.professor} (${o.item.rating}/5) ${meetingLines(o.item).join(" | ")}`);
+  }
   for (const item of s.items) {
     const rating = item.rating === null ? "no ratings yet" : `${item.rating}/5`;
     const badges = [
@@ -72,6 +75,33 @@ function run(name: string, input: SchedulerInput) {
 run("Junior CS, 5 courses, interest AI", { ...student, aiRules: interestedInAi });
 run("Same, no AI rules (no interest)", { ...student, aiRules: null });
 run('Same + "I work Tuesday evenings"', { ...student, aiRules: { ...worksTuesdayEvenings, softRules: interestedInAi.softRules } });
+
+// Senior demo: checks that no strategy tab uses a full section
+const senior: SchedulerInput = {
+  major: "Computer Science",
+  year: "Senior",
+  campus: "Marietta",
+  takenCourses: ["CSE 1321", "CSE 1322", "MATH 1190", "ENGL 1101", "ENGL 1102", "CSE 2300", "CS 3305", "CS 3503"],
+  selectedCourses: ["AI 4732", "CS 4722", "CS 4306", "AI 3642"],
+  preferences: {
+    numCourses: 4,
+    days: ["Mon", "Tue", "Wed", "Thu"],
+    times: ["Afternoon"],
+    numOnline: 1,
+    notes: "",
+    busyTimes: [{ days: ["Mon"], start: 8 * 60, end: 12 * 60 }],
+  },
+  aiRules: null,
+};
+function checkNoFull(name: string, input: SchedulerInput) {
+  run(name, input);
+  const tabs = buildSchedules(input).schedules;
+  const fullTabs = tabs.flatMap((s) => s.items.filter((i) => i.waitlist).map((i) => `${s.strategy}: ${i.code}`));
+  console.log(fullTabs.length === 0 ? "\nCHECK: no tab includes a full section" : `\nCHECK FAILED: full sections in tabs -> ${fullTabs.join(", ")}`);
+}
+checkNoFull("Senior demo (4 courses, Afternoon, busy Mon 8-12)", senior);
+// CS 4504 has no open section at Marietta: it must be left out (with a waitlist option) and a suggested course may fill the slot
+checkNoFull("Senior with a full course (CS 4504)", { ...senior, selectedCourses: ["AI 4732", "CS 4722", "CS 4504", "AI 3642"] });
 
 // "Find another option"
 const input: SchedulerInput = { ...student, aiRules: interestedInAi };

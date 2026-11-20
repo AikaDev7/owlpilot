@@ -258,9 +258,11 @@ export default function ResultsScreen({ navigation }: Props) {
             {schedule.items.map((item) => (
               <CourseCard key={item.code} item={item} badges={badgesFor(item, bestCode)} expandable waitlistNote summary={summaryFor(item.professor)} summaryLoading={explainLoading} />
             ))}
-            {initial?.notes.map((note, i) => (
-              <Text key={i} style={styles.note}>{note}</Text>
-            ))}
+            {initial?.notes
+              .filter((note) => !schedule.items.some((i) => note.startsWith(`${i.code}:`)))
+              .map((note, i) => (
+                <Text key={i} style={styles.note}>{note}</Text>
+              ))}
 
             {(explainLoading || explained) && (
               <View style={styles.why}>
@@ -269,7 +271,7 @@ export default function ResultsScreen({ navigation }: Props) {
               </View>
             )}
 
-            {alternatives.length > 0 && (
+            {(alternatives.length > 0 || schedule.waitlistOptions.length > 0) && (
               <>
                 <Text style={styles.sectionTitle}>Upgrade your professor</Text>
                 <Text style={styles.sectionSub}>Higher-rated professors for the same course, if you’re flexible.</Text>
@@ -288,6 +290,18 @@ export default function ResultsScreen({ navigation }: Props) {
                     </CourseCard>
                   );
                 })}
+                {schedule.waitlistOptions.map(({ item: opt }) => (
+                  <CourseCard key={`wait-${opt.code}`} item={opt} badges={[`Waitlist · ${opt.waitCount} of ${waitCapacity(opt)} spots taken`, "High Rated"]} variant="yellow" showRmp extra={`${opt.code} has no open section that fits your times.`}>
+                    {(explainLoading || summaryFor(opt.professor)) && (
+                      <Text style={styles.altSummary}>{explainLoading ? "Summarizing reviews…" : summaryFor(opt.professor)}</Text>
+                    )}
+                    <Text style={styles.waitLine}>You’d join the waitlist. A seat isn’t guaranteed.</Text>
+                    {swapError?.code === opt.code && <Text style={styles.error}>{swapError.message}</Text>}
+                    <Pressable onPress={() => choose(-1, opt)} style={styles.choose}>
+                      <Text style={styles.chooseText}>Add to my schedule</Text>
+                    </Pressable>
+                  </CourseCard>
+                ))}
               </>
             )}
           </>
