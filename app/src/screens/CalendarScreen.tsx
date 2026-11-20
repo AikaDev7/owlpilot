@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Linking, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
+import { allCrns, crnLabel, crnsOf, emailBody, emailSubject } from "../logic/crn";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import PrimaryButton from "../components/PrimaryButton";
@@ -22,6 +24,7 @@ export default function CalendarScreen({ navigation }: NativeStackScreenProps<Ro
   const schedule = profile.acceptedSchedule;
   const [changing, setChanging] = useState<number | null>(null); // index of the class being changed
   const [message, setMessage] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
 
   // Same input Results uses (only exists after a schedule was accepted)
   const input: SchedulerInput | null = profile.preferences
@@ -48,6 +51,30 @@ export default function CalendarScreen({ navigation }: NativeStackScreenProps<Ro
     setProfile({ ...profile, acceptedSchedule: result.schedule });
     setMessage(null);
     setChanging(null);
+  }
+
+  function showToast(text: string) {
+    setToast(text);
+    setTimeout(() => setToast(null), 2000);
+  }
+
+  async function copy(text: string) {
+    await Clipboard.setStringAsync(text);
+    showToast("Copied");
+  }
+
+  async function emailCrns() {
+    if (!schedule) return;
+    const subject = emailSubject(profile.semester);
+    const body = emailBody(schedule.items);
+    const url = `mailto:${encodeURIComponent(profile.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    try {
+      if (!(await Linking.canOpenURL(url))) throw new Error("no mail app");
+      await Linking.openURL(url);
+    } catch {
+      await Clipboard.setStringAsync(`${subject}\n\n${body}`);
+      showToast("Couldn’t open Mail. Copied the text instead.");
+    }
   }
 
   function findClass(item: ScheduleItem) {
@@ -95,6 +122,11 @@ export default function CalendarScreen({ navigation }: NativeStackScreenProps<Ro
                       <Text style={styles.lineText}>{t}</Text>
                     </View>
                   ))}
+                  <Pressable onPress={() => copy(crnsOf(item).join(", "))} style={styles.line}>
+                    <Ionicons name="pricetag-outline" size={16} color={colors.black} />
+                    <Text style={[styles.lineText, { flex: 1 }]}>{crnLabel(item)}</Text>
+                    <Ionicons name="copy-outline" size={16} color={colors.black} />
+                  </Pressable>
                   <View style={[styles.line, styles.bottomRow]}>
                     <Ionicons name="location-outline" size={16} color={colors.black} />
                     <Text style={[styles.lineText, { flex: 1 }]}>{formatLine(item)}</Text>
@@ -108,6 +140,12 @@ export default function CalendarScreen({ navigation }: NativeStackScreenProps<Ro
                 </View>
               );
             })}
+            <Pressable onPress={() => copy(allCrns(schedule.items).join(", "))} style={[styles.changeAll, styles.outlineBtn]}>
+              <Text style={styles.changeAllText}>Copy all CRNs</Text>
+            </Pressable>
+            <Pressable onPress={emailCrns} style={[styles.changeAll, styles.outlineBtn]}>
+              <Text style={styles.changeAllText}>Email me my CRNs</Text>
+            </Pressable>
             <Pressable onPress={() => changeCourses(navigation)} style={styles.changeAll}>
               <Text style={styles.changeAllText}>Change All Classes</Text>
             </Pressable>
@@ -115,6 +153,11 @@ export default function CalendarScreen({ navigation }: NativeStackScreenProps<Ro
         )}
       </SafeAreaView>
       <TabBar active="Calendar" />
+      {toast && (
+        <View style={styles.toast} pointerEvents="none">
+          <Text style={styles.toastText}>{toast}</Text>
+        </View>
+      )}
 
       <Modal visible={changing !== null} transparent animationType="slide" onRequestClose={() => setChanging(null)}>
         <View style={styles.overlay}>
@@ -162,6 +205,9 @@ const styles = StyleSheet.create({
   findBtn: { flexDirection: "row", alignItems: "center", gap: 4, borderWidth: 1, borderColor: colors.black, borderRadius: 6, paddingHorizontal: 8, height: 26 },
   findText: { fontFamily: fonts.body, fontSize: 11, color: colors.black },
   changeAll: { borderWidth: 1, borderColor: colors.yellow, backgroundColor: colors.lightYellow, borderRadius: 12, height: 48, alignItems: "center", justifyContent: "center", marginTop: 4 },
+  outlineBtn: { marginBottom: 6 },
+  toast: { position: "absolute", left: 16, right: 16, bottom: TAB_BAR_SPACE + 10, backgroundColor: colors.black, borderRadius: 12, paddingVertical: 12, paddingHorizontal: 16 },
+  toastText: { fontFamily: fonts.bodyMedium, fontSize: 14, color: colors.white, textAlign: "center" },
   changeAllText: { fontFamily: fonts.title, fontSize: 16, color: colors.black },
   overlay: { flex: 1, backgroundColor: colors.overlay, justifyContent: "flex-end" },
   sheet: { backgroundColor: colors.white, borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: 16, maxHeight: "75%" },

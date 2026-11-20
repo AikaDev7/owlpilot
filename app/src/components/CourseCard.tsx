@@ -3,6 +3,7 @@ import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { findProfessor } from "../data/sections";
 import { meetingLines, ScheduleItem } from "../logic/scheduler";
+import { crnLabel } from "../logic/crn";
 import { colors, fonts } from "../theme";
 
 type Props = {
@@ -92,6 +93,10 @@ export default function CourseCard({ item, badges, variant = "white", expandable
           <View style={styles.line}>
             <Ionicons name="location-outline" size={18} color={colors.labelGray} />
             <Text style={styles.place}>{placeLine(item)}</Text>
+          </View>
+          <View style={styles.line}>
+            <Ionicons name="pricetag-outline" size={18} color={colors.labelGray} />
+            <Text style={styles.place}>{crnLabel(item)}</Text>
           </View>
         </View>
         <View style={styles.rating}>
