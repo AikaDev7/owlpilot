@@ -13,6 +13,7 @@ export const colors = {
   buttonText: "#131313", // text on yellow buttons
   yellowBorder: "#D59C00", // border of selected chips
   inputGray: "#EAEAEA", // input background on light screens
+  textFieldBorder: "#D1D1D1", // border of the name/email inputs
   inputBorder: "#D6D6D6",
   chipGray: "#EBEBEB", // unselected chip background
   chipText: "#333333",

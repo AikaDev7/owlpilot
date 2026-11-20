@@ -1,5 +1,5 @@
 import { ComponentRef, useRef, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation";
 import { colors, fonts } from "../theme";
@@ -24,6 +24,9 @@ export default function AboutYouScreen({ navigation, route }: Props) {
   const { profile, setProfile } = useProfile();
   const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
 
+  const [firstName, setFirstName] = useState(profile.firstName);
+  const [lastName, setLastName] = useState(profile.lastName);
+  const [email, setEmail] = useState(profile.email);
   const [major, setMajor] = useState<string | null>(route.params.major);
   const [year, setYear] = useState<string | null>(null);
   const [startYear, setStartYear] = useState<number | null>(null);
@@ -60,13 +63,17 @@ export default function AboutYouScreen({ navigation, route }: Props) {
 
   function handleContinue() {
     const majorValid = major !== null && majors.includes(major);
-    if (!majorValid || year === null || startYear === null || gradYear === null) {
+    if (!firstName.trim() || emailInvalid || !majorValid || year === null || startYear === null || gradYear === null) {
       setShowErrors(true);
       return;
     }
-    setProfile({ ...profile, major, year, startYear, gradYear, takenCourses: takenCodes });
+    setProfile({ ...profile, firstName: firstName.trim(), lastName: lastName.trim(), email: email.trim(), major, year, startYear, gradYear, takenCourses: takenCodes });
     navigation.navigate("SelectCourses");
   }
+
+  // Email is optional; only check the format when something is typed
+  const emailInvalid = email.trim() !== "" && !/^\S+@\S+\.\S+$/.test(email.trim());
+  const firstNameMissing = showErrors && !firstName.trim();
 
   let gradError: string | undefined;
   if (gradCleared) gradError = "Graduation year can’t be before your start year.";
@@ -79,6 +86,49 @@ export default function AboutYouScreen({ navigation, route }: Props) {
 
         <Text style={styles.title}>Tell Us About Yourself</Text>
         <Text style={styles.subtitle}>Let’s personalize your academic journey</Text>
+
+        <View style={styles.section}>
+          <SectionTitle>Enter your name</SectionTitle>
+          <View style={[styles.row, styles.field]}>
+            <TextInput
+              style={[styles.input, styles.half, firstNameMissing && styles.inputError]}
+              value={firstName}
+              onChangeText={setFirstName}
+              placeholder="First Name"
+              placeholderTextColor={colors.placeholder}
+              autoCapitalize="words"
+              autoComplete="given-name"
+            />
+            <TextInput
+              style={[styles.input, styles.half]}
+              value={lastName}
+              onChangeText={setLastName}
+              placeholder="Last Name"
+              placeholderTextColor={colors.placeholder}
+              autoCapitalize="words"
+              autoComplete="family-name"
+            />
+          </View>
+          {firstNameMissing && <Text style={styles.error}>Please enter your first name.</Text>}
+        </View>
+
+        <View style={styles.section}>
+          <SectionTitle>Enter your email</SectionTitle>
+          <View style={styles.field}>
+            <TextInput
+              style={[styles.input, showErrors && emailInvalid && styles.inputError]}
+              value={email}
+              onChangeText={setEmail}
+              placeholder="Email address"
+              placeholderTextColor={colors.placeholder}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoComplete="email"
+            />
+          </View>
+          {showErrors && emailInvalid && <Text style={styles.error}>Please enter a valid email address.</Text>}
+        </View>
 
         <View style={styles.section}>
           <SectionTitle>What’s your major?</SectionTitle>
@@ -180,6 +230,19 @@ const styles = StyleSheet.create({
   yearChip: { width: "47%", paddingVertical: 9 },
   row: { flexDirection: "row", alignItems: "flex-start", gap: 12 },
   half: { flex: 1 },
+  // Figma 130:480: gray box, 1px #D1D1D1 border, radius 6, 12px Manrope text
+  input: {
+    height: 40,
+    paddingHorizontal: 15,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: colors.textFieldBorder,
+    backgroundColor: colors.inputGray,
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.black,
+  },
+  inputError: { borderColor: colors.error },
   hint: { fontFamily: fonts.body, fontSize: 12, lineHeight: 21, color: colors.textGray },
   error: { fontFamily: fonts.body, fontSize: 12, color: colors.error, marginTop: 6 },
   courseChips: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 16 },

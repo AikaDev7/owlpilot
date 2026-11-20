@@ -53,7 +53,7 @@ export default function HomeScreen({ navigation }: NativeStackScreenProps<RootSt
             </Text>
           </View>
           <View style={styles.content}>
-            <Text style={styles.hello}>Hey there!</Text>
+            <Text style={styles.hello}>{profile.firstName.trim() ? `Hey, ${profile.firstName.trim()}!` : "Hey there!"}</Text>
             <Text style={styles.sub}>Here’s what your day looks like</Text>
 
             <View style={styles.upNext}>

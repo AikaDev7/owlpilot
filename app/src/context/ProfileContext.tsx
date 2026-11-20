@@ -21,6 +21,9 @@ export type AiRules = { hardRules: HardRule[]; softRules: SoftRule[]; summary: s
 
 // What the user told us in the onboarding steps. Later screens read it with useProfile().
 export type Profile = {
+  firstName: string; // set on About You (required there); stays on the device
+  lastName: string;
+  email: string;
   major: string | null;
   year: string | null; // Freshman / Sophomore / Junior / Senior
   startYear: number | null;
@@ -34,7 +37,7 @@ export type Profile = {
   acceptedSchedule: Schedule | null; // set when the student taps "Accept Schedule" on Results
 };
 
-const emptyProfile: Profile = { major: null, year: null, startYear: null, gradYear: null, takenCourses: [], semester: null, campus: null, selectedCourses: [], preferences: null, aiRules: null, acceptedSchedule: null };
+const emptyProfile: Profile = { firstName: "", lastName: "", email: "", major: null, year: null, startYear: null, gradYear: null, takenCourses: [], semester: null, campus: null, selectedCourses: [], preferences: null, aiRules: null, acceptedSchedule: null };
 
 type ProfileContextValue = {
   profile: Profile;
